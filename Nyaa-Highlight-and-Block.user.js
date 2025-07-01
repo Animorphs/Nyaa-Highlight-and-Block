@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Nyaa - Highlight & Block
-// @version      1.00
+// @version      1.01
 // @description  Highlight and block releases on nyaa.si
 // @author       Animorphs
 // @namespace    https://github.com/Animorphs/Nyaa-Highlight-and-Block
