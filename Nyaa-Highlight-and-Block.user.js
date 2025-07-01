@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Nyaa - Highlight & Block
-// @namespace    http://tampermonkey.net/
 // @version      1.00
 // @description  Highlight and block releases on nyaa.si
 // @author       Animorphs
+// @namespace    https://github.com/Animorphs/Nyaa-Highlight-and-Block
 // @match        https://nyaa.si/*
 // @match        https://sukebei.nyaa.si/*
 // @exclude      https://nyaa.si/view/*
