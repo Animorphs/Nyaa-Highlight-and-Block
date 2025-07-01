@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Nyaa - Highlight & Block
-// @version      1.01
+// @version      1.02
 // @description  Highlight and block releases on nyaa.si
 // @author       Animorphs
 // @namespace    https://github.com/Animorphs/Nyaa-Highlight-and-Block
@@ -33,7 +33,8 @@
             FANSUBBERS_TOGGLE: 'fansubbersToggle',
             MINIS_TOGGLE: 'minisToggle',
             FANSUBBERS_BLACKLIST: 'fansubbersBlacklist',
-            MINIS_BLACKLIST: 'minisBlacklist'
+            MINIS_BLACKLIST: 'minisBlacklist',
+            BLOCKED_CATEGORIES: 'blockedCategories'
         },
         DEFAULTS: {
             HIGHLIGHT: isSukebei ? [
@@ -122,6 +123,27 @@
             [["[TRC]"], []]
         ]
     };
+
+    const CATEGORIES = {
+        'anime-amv': 'Anime - AMV',
+        'anime-english': 'Anime - English-translated',
+        'anime-non-english': 'Anime - Non-English-translated',
+        'anime-raw': 'Anime - Raw',
+        'audio-lossless': 'Audio - Lossless',
+        'audio-lossy': 'Audio - Lossy',
+        'literature-english': 'Literature - English-translated',
+        'literature-non-english': 'Literature - Non-English-translated',
+        'literature-raw': 'Literature - Raw',
+        'live-action-english': 'Live Action - English-translated',
+        'live-action-idol': 'Live Action - Idol/Promotional Video',
+        'live-action-non-english': 'Live Action - Non-English-translated',
+        'live-action-raw': 'Live Action - Raw',
+        'pictures-graphics': 'Pictures - Graphics',
+        'pictures-photos': 'Pictures - Photos',
+        'software-applications': 'Software - Applications',
+        'software-games': 'Software - Games'
+    };
+
 
     const SELECTORS = {
         TORRENT_ROWS: 'tbody tr',
@@ -321,6 +343,7 @@
         minisToggle: JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.MINIS_TOGGLE)) ?? false,
         fansubbersBlacklist: JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.FANSUBBERS_BLACKLIST)) || [],
         minisBlacklist: JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.MINIS_BLACKLIST)) || [],
+        blockedCategories: JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.BLOCKED_CATEGORIES)) || [],
         editMode: {
             isEditing: false,
             type: null,
@@ -434,6 +457,13 @@
          */
         saveMinisBlacklist() {
             localStorage.setItem(CONFIG.STORAGE_KEYS.MINIS_BLACKLIST, JSON.stringify(this.minisBlacklist));
+        },
+
+        /**
+         * Save blocked categories to localStorage
+        */
+        saveBlockedCategories() {
+            localStorage.setItem(CONFIG.STORAGE_KEYS.BLOCKED_CATEGORIES, JSON.stringify(this.blockedCategories));
         }
     };
 
@@ -709,6 +739,41 @@
     };
 
     /**
+     * Get category from torrent row
+     * @param {Element} row - Torrent row element
+     * @returns {string} Category identifier
+     */
+    const getCategoryFromRow = (row) => {
+        const categoryImg = row.querySelector('img.category-icon');
+        if (!categoryImg) return '';
+
+        const alt = categoryImg.getAttribute('alt') || '';
+
+        // Map alt text to category identifiers
+        const categoryMap = {
+            'Anime - AMV': 'anime-amv',
+            'Anime - English-translated': 'anime-english',
+            'Anime - Non-English-translated': 'anime-non-english',
+            'Anime - Raw': 'anime-raw',
+            'Audio - Lossless': 'audio-lossless',
+            'Audio - Lossy': 'audio-lossy',
+            'Literature - English-translated': 'literature-english',
+            'Literature - Non-English-translated': 'literature-non-english',
+            'Literature - Raw': 'literature-raw',
+            'Live Action - English-translated': 'live-action-english',
+            'Live Action - Idol/Promotional Video': 'live-action-idol',
+            'Live Action - Non-English-translated': 'live-action-non-english',
+            'Live Action - Raw': 'live-action-raw',
+            'Pictures - Graphics': 'pictures-graphics',
+            'Pictures - Photos': 'pictures-photos',
+            'Software - Applications': 'software-applications',
+            'Software - Games': 'software-games'
+        };
+
+        return categoryMap[alt] || '';
+    };
+
+    /**
      * Update display of torrent rows based on current filters
      */
     const updateDisplay = debounce(() => {
@@ -717,10 +782,17 @@
         rows.forEach(row => {
             const titleElement = row.querySelector(SELECTORS.TITLE_ELEMENT);
             const title = getTitleFromElement(titleElement);
+            const category = getCategoryFromRow(row);
 
             // Reset row if disabled
             if (!AppState.isEnabled) {
                 resetRowAppearance(row);
+                return;
+            }
+
+            // Check if category is blocked
+            if (category && AppState.blockedCategories.includes(category)) {
+                row.style.display = 'none';
                 return;
             }
 
@@ -1608,7 +1680,7 @@
                     color: white;
                 }
 
-                .help-popup {
+                .help-popup, .settings-overlay {
                     position: fixed;
                     top: 10vh;
                     left: 50%;
@@ -1818,25 +1890,6 @@
                     transform: rotate(90deg);
                 }
 
-                .settings-overlay {
-                    position: fixed;
-                    top: 10vh;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    background-color: #333;
-                    color: white;
-                    padding: 20px;
-                    z-index: 10002;
-                    border: 2px solid #ccc;
-                    border-radius: 10px;
-                    display: none;
-                    max-height: 80vh;
-                    max-width: 90vw;
-                    width: 500px;
-                    overflow-y: auto;
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-                }
-
                 .settings-header {
                     display: flex;
                     justify-content: space-between;
@@ -1890,21 +1943,6 @@
 
                 .settings-button:hover {
                     background-color: #5a6268;
-                }
-
-                .preset-btn {
-                    padding: 8px 16px;
-                    font-size: 12px;
-                    background-color: #28a745;
-                    border: 1px solid #1e7e34;
-                    color: white;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    transition: background-color 0.2s;
-                }
-
-                .preset-btn:hover {
-                    background-color: #218838;
                 }
 
                 .color-picker-section {
@@ -1974,6 +2012,66 @@
 
                 .color-picker-active .settings-overlay {
                     display: block !important;
+                }
+
+                .category-controls {
+                    display: flex;
+                    gap: 10px;
+                    margin-bottom: 15px;
+                }
+
+                .category-control-btn {
+                    padding: 6px 12px;
+                    font-size: 11px;
+                    background-color: #6c757d;
+                    border: 1px solid #5a6268;
+                    color: white;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    transition: background-color 0.2s;
+                    font-weight: normal;
+                }
+
+                .category-control-btn:hover {
+                    background-color: #5a6268;
+                }
+
+                .category-checkboxes {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                    max-height: 200px;
+                    overflow-y: auto;
+                }
+
+                .category-checkbox-row {
+                    display: flex;
+                    align-items: center;
+                }
+
+                .category-checkbox-label {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    font-size: 12px;
+                    color: #ccc;
+                    cursor: pointer;
+                    width: 100%;
+                    font-weight: normal;
+                }
+
+                .category-checkbox {
+                    margin: 0;
+                    cursor: pointer;
+                }
+
+                .category-name {
+                    flex-grow: 1;
+                    font-weight: normal;
+                }
+
+                .category-checkbox-label:hover .category-name {
+                    color: white;
                 }
             `;
             document.head.appendChild(style);
@@ -2120,6 +2218,24 @@
                                         <span class="slider"></span>
                                     </label>
                                 </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h4>Block Categories</h4>
+                            <div class="category-controls">
+                                <button id="select-all-categories" class="category-control-btn">Select All</button>
+                                <button id="select-none-categories" class="category-control-btn">Select None</button>
+                            </div>
+                            <div class="category-checkboxes">
+                                ${Object.entries(CATEGORIES).map(([key, label]) => `
+                                    <div class="category-checkbox-row">
+                                        <label class="category-checkbox-label">
+                                            <input type="checkbox" class="category-checkbox" data-category="${key}" ${AppState.blockedCategories.includes(key) ? 'checked' : ''}>
+                                            <span class="category-name">${label}</span>
+                                        </label>
+                                    </div>
+                                `).join('')}
                             </div>
                         </div>
 
@@ -2435,6 +2551,58 @@
                     document.body.classList.remove('color-picker-active');
                 }
             });
+
+            // Category checkbox event listeners
+            const categoryCheckboxes = document.querySelectorAll('.category-checkbox');
+            categoryCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', (event) => {
+                    const category = event.target.dataset.category;
+                    if (event.target.checked) {
+                        if (!AppState.blockedCategories.includes(category)) {
+                            AppState.blockedCategories.push(category);
+                        }
+                    } else {
+                        const index = AppState.blockedCategories.indexOf(category);
+                        if (index > -1) {
+                            AppState.blockedCategories.splice(index, 1);
+                        }
+                    }
+                    AppState.saveBlockedCategories();
+                    updateDisplay();
+                });
+            });
+
+            // Select all categories button
+            const selectAllBtn = document.getElementById('select-all-categories');
+            if (selectAllBtn) {
+                selectAllBtn.addEventListener('click', () => {
+                    AppState.blockedCategories = Object.keys(CATEGORIES);
+                    AppState.saveBlockedCategories();
+
+                    // Update all checkboxes
+                    categoryCheckboxes.forEach(checkbox => {
+                        checkbox.checked = true;
+                    });
+
+                    updateDisplay();
+                });
+            }
+
+            // Select none categories button
+            const selectNoneBtn = document.getElementById('select-none-categories');
+            if (selectNoneBtn) {
+                selectNoneBtn.addEventListener('click', () => {
+                    AppState.blockedCategories = [];
+                    AppState.saveBlockedCategories();
+
+                    // Update all checkboxes
+                    categoryCheckboxes.forEach(checkbox => {
+                        checkbox.checked = false;
+                    });
+
+                    updateDisplay();
+                });
+            }
 
             updateRuleLists();
             updateDisplay();
