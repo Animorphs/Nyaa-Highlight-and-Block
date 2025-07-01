@@ -2143,7 +2143,7 @@
                         <li><strong>Block:</strong> Completely hides matching titles from view</li>
                     </ul>
 
-                    <p><strong>How to Creating a Rule:</strong></p>
+                    <p><strong>How to Create a Rule:</strong></p>
                     <ul>
                         <li>Type each word or phrase and press <strong>Enter</strong> to create a separate "chip"</li>
                         <li>You can click on any chip to edit it</li>
@@ -2410,7 +2410,11 @@
 
             if (settingsBtn) {
                 settingsBtn.addEventListener('click', () => {
-                    settingsOverlay.style.display = 'block';
+                    if (settingsOverlay.style.display === 'block') {
+                        settingsOverlay.style.display = 'none';
+                    } else {
+                        settingsOverlay.style.display = 'block';
+                    }
                 });
             }
 
