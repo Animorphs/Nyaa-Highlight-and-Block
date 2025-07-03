@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Nyaa - Highlight & Block
-// @version      1.02
+// @version      1.03
 // @description  Highlight and block releases on nyaa.si
 // @author       Animorphs
 // @namespace    https://github.com/Animorphs/Nyaa-Highlight-and-Block
@@ -34,19 +34,19 @@
             MINIS_TOGGLE: 'minisToggle',
             FANSUBBERS_BLACKLIST: 'fansubbersBlacklist',
             MINIS_BLACKLIST: 'minisBlacklist',
-            BLOCKED_CATEGORIES: 'blockedCategories'
+            BLOCKED_CATEGORIES: isSukebei ? 'blockedCategories_sukebei' : 'blockedCategories'
         },
         DEFAULTS: {
             HIGHLIGHT: isSukebei ? [
                 [["[SakuraCircle]"], []]
             ] : [
-                [["Animorphs"], []],
-                [["whomst"], []]
+                [["[Animorphs]"], []],
+                [["[whomst]"], []]
             ],
             BLOCK: isSukebei ? [] : [
                 [["[Raze]"], []],
-                [["SubsPlease"], ["1080p"]],
-                [["Erai-raws"], ["1080p"]]
+                [["[SubsPlease]"], ["1080p"]],
+                [["[Erai-raws]"], ["1080p"]]
             ]
         },
         DEBOUNCE_DELAY: 100,
@@ -68,6 +68,7 @@
             [["[Cyan]"], []],
             [["[DameDesuYo]"], []],
             [["[DarkWispers]"], []],
+            [["[derpie]"], []],
             [["[FLE]"], []],
             [["[Freehold]"], []],
             [["[GHS]"], []],
@@ -105,7 +106,8 @@
             [["[WakuTomete]"], []],
             [["[WastedChaser]"], []],
             [["[WasteOfBlindness]"], []],
-            [["[washed]"], []]
+            [["[washed]"], []],
+            [["[whomst]"], []]
         ],
         MINIS: [
             [["[Anime Time]"], []],
@@ -116,6 +118,8 @@
             [["[DB]"], []],
             [["[DKB]"], []],
             [["[EMBER]"], []],
+            [["[Erai-raws]","WEBRip"], []],
+            [["[JacobSwaggedUp]"], []],
             [["[MiniMTBB]"], []],
             [["[neoDESU]"], []],
             [["[neoHEVC]"], []],
@@ -124,7 +128,15 @@
         ]
     };
 
-    const CATEGORIES = {
+    const CATEGORIES = isSukebei ? {
+        'art-anime': 'Art - Anime',
+        'art-doujinshi': 'Art - Doujinshi',
+        'art-games': 'Art - Games',
+        'art-manga': 'Art - Manga',
+        'art-pictures': 'Art - Pictures',
+        'real-life-photobooks': 'Real Life - Photobooks and Pictures',
+        'real-life-videos': 'Real Life - Videos'
+    } : {
         'anime-amv': 'Anime - AMV',
         'anime-english': 'Anime - English-translated',
         'anime-non-english': 'Anime - Non-English-translated',
@@ -143,7 +155,6 @@
         'software-applications': 'Software - Applications',
         'software-games': 'Software - Games'
     };
-
 
     const SELECTORS = {
         TORRENT_ROWS: 'tbody tr',
@@ -744,13 +755,21 @@
      * @returns {string} Category identifier
      */
     const getCategoryFromRow = (row) => {
-        const categoryImg = row.querySelector('img.category-icon');
+        const categoryImg = row.querySelector('img[alt]');
         if (!categoryImg) return '';
 
         const alt = categoryImg.getAttribute('alt') || '';
 
-        // Map alt text to category identifiers
-        const categoryMap = {
+        // Direct mapping from alt text to category IDs
+        const categoryMap = isSukebei ? {
+            'Art - Anime': 'art-anime',
+            'Art - Doujinshi': 'art-doujinshi',
+            'Art - Games': 'art-games',
+            'Art - Manga': 'art-manga',
+            'Art - Pictures': 'art-pictures',
+            'Real Life - Photobooks and Pictures': 'real-life-photobooks',
+            'Real Life - Videos': 'real-life-videos'
+        } : {
             'Anime - AMV': 'anime-amv',
             'Anime - English-translated': 'anime-english',
             'Anime - Non-English-translated': 'anime-non-english',
@@ -774,10 +793,53 @@
     };
 
     /**
+     * Get the current category being browsed from URL
+     * @returns {string|null} Current category ID or null if not browsing a specific category
+     */
+    const getCurrentBrowsingCategory = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const categoryParam = urlParams.get('c');
+
+        if (!categoryParam) return null;
+
+        // Map URL category codes to our category IDs
+        const categoryCodeMap = isSukebei ? {
+            '1_1': 'art-anime',
+            '1_2': 'art-doujinshi',
+            '1_3': 'art-games',
+            '1_4': 'art-manga',
+            '1_5': 'art-pictures',
+            '2_1': 'real-life-photobooks',
+            '2_2': 'real-life-videos'
+        } : {
+            '1_1': 'anime-amv',
+            '1_2': 'anime-english',
+            '1_3': 'anime-non-english',
+            '1_4': 'anime-raw',
+            '2_1': 'audio-lossless',
+            '2_2': 'audio-lossy',
+            '3_1': 'literature-english',
+            '3_2': 'literature-non-english',
+            '3_3': 'literature-raw',
+            '4_1': 'live-action-english',
+            '4_2': 'live-action-idol',
+            '4_3': 'live-action-non-english',
+            '4_4': 'live-action-raw',
+            '5_1': 'pictures-graphics',
+            '5_2': 'pictures-photos',
+            '6_1': 'software-applications',
+            '6_2': 'software-games'
+        };
+
+        return categoryCodeMap[categoryParam] || null;
+    };
+
+    /**
      * Update display of torrent rows based on current filters
      */
     const updateDisplay = debounce(() => {
         const rows = document.querySelectorAll(SELECTORS.TORRENT_ROWS);
+        const currentBrowsingCategory = getCurrentBrowsingCategory();
 
         rows.forEach(row => {
             const titleElement = row.querySelector(SELECTORS.TITLE_ELEMENT);
@@ -790,8 +852,10 @@
                 return;
             }
 
-            // Check if category is blocked
-            if (category && AppState.blockedCategories.includes(category)) {
+            // Check if category is blocked, but skip if it's the current browsing category
+            if (category &&
+                AppState.blockedCategories.includes(category) &&
+                category !== currentBrowsingCategory) {
                 row.style.display = 'none';
                 return;
             }
@@ -813,6 +877,9 @@
                 }
             }
         });
+
+        // Check if everything is blocked and show message if needed
+        checkIfEverythingBlocked();
     }, CONFIG.DEBOUNCE_DELAY);
 
     /**
@@ -850,6 +917,72 @@
         }
         row.style.backgroundColor = '';
         row.style.display = '';
+    };
+
+    /**
+     * Check if all rows are hidden and show appropriate message
+     */
+    const checkIfEverythingBlocked = () => {
+        const rows = document.querySelectorAll(SELECTORS.TORRENT_ROWS);
+        const visibleRows = Array.from(rows).filter(row => {
+            const computedStyle = window.getComputedStyle(row);
+            return computedStyle.display !== 'none';
+        });
+
+        let messageElement = document.getElementById('everything-blocked-message');
+
+        // Only show message if script is enabled and there are rows but none are visible
+        if (AppState.isEnabled && rows.length > 0 && visibleRows.length === 0) {
+            if (!messageElement) {
+                // Create the message element
+                messageElement = document.createElement('div');
+                messageElement.id = 'everything-blocked-message';
+                messageElement.className = 'everything-blocked-message';
+                messageElement.innerHTML = `
+                    🚫 Everything's blocked! Maybe your blocking is a little too aggressive...
+                    <div class="subtitle">Try adjusting your block rules or category filters in the <a href="#" id="open-settings-link" style="color: #007bff; text-decoration: underline; cursor: pointer;">settings</a>.</div>
+                `;
+
+                // Insert after the torrent table
+                const torrentTable = document.querySelector('.torrent-list');
+                if (torrentTable) {
+                    torrentTable.parentNode.insertBefore(messageElement, torrentTable.nextSibling);
+                } else {
+                    // Fallback: insert after the first table found
+                    const firstTable = document.querySelector('table');
+                    if (firstTable) {
+                        firstTable.parentNode.insertBefore(messageElement, firstTable.nextSibling);
+                    }
+                }
+            }
+
+            // Always rebind the click event (in case the element was recreated)
+            const settingsLink = document.getElementById('open-settings-link');
+            if (settingsLink) {
+                // Remove any existing event listeners by cloning the element
+                const newSettingsLink = settingsLink.cloneNode(true);
+                settingsLink.parentNode.replaceChild(newSettingsLink, settingsLink);
+
+                // Add the event listener to the new element
+                newSettingsLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Settings link clicked'); // Debug log
+
+                    // Make sure GUI is visible first
+                    if (UI.guiContainer.style.display !== 'flex') {
+                        UI.toggleGUI();
+                    }
+                });
+            }
+
+            messageElement.style.display = 'block';
+        } else {
+            // Hide message if it exists
+            if (messageElement) {
+                messageElement.style.display = 'none';
+            }
+        }
     };
 
     // ============================================================================
@@ -1086,14 +1219,14 @@
     };
 
     /**
-     * Sort rules alphabetically by first keyword, ignoring leading brackets
+     * Sort rules alphabetically by first keyword, ignoring leading brackets and parentheses
      * @param {Array} rules - Rules array to sort
      */
     const sortRules = (rules) => {
         rules.sort((a, b) => {
-            // Get the first keyword from each rule and remove leading brackets for comparison
-            const keywordA = a[0].join(' ').toLowerCase().replace(/^\[/, '');
-            const keywordB = b[0].join(' ').toLowerCase().replace(/^\[/, '');
+            // Get the first keyword from each rule and remove leading brackets and parentheses
+            const keywordA = a[0].join(' ').toLowerCase().replace(/^[\[\(]/, '');
+            const keywordB = b[0].join(' ').toLowerCase().replace(/^[\[\(]/, '');
             return keywordA.localeCompare(keywordB);
         });
     };
@@ -1432,7 +1565,6 @@
                 .chip-remove {
                     margin-left: 6px;
                     cursor: pointer;
-                    font-weight: bold;
                     font-size: 14px;
                     user-select: none;
                     z-index: 1;
@@ -1582,8 +1714,7 @@
                     flex-shrink: 0;
                 }
 
-                .keyword-chip {
-                    background-color: #28a745;
+                .colored-chip {
                     color: white;
                     padding: 2px 6px;
                     border-radius: 12px;
@@ -1592,14 +1723,12 @@
                     font-size: 12px;
                 }
 
-                .exception-chip {
+                .green-chip {
+                    background-color: #28a745;
+                }
+
+                .red-chip {
                     background-color: #dc3545;
-                    color: white;
-                    padding: 2px 6px;
-                    border-radius: 12px;
-                    margin: 2px;
-                    display: inline-block;
-                    font-size: 12px;
                 }
 
                 .button-group {
@@ -1654,7 +1783,6 @@
                     border: none;
                     cursor: pointer;
                     font-size: 12px;
-                    font-weight: bold;
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -1682,7 +1810,8 @@
 
                 .help-popup, .settings-overlay {
                     position: fixed;
-                    top: 10vh;
+                    top: 5vh;
+                    bottom: 5vh;
                     left: 50%;
                     transform: translateX(-50%);
                     background-color: #333;
@@ -1692,12 +1821,9 @@
                     border: 2px solid #ccc;
                     border-radius: 10px;
                     display: none;
-                    max-height: 75vh;
-                    max-width: 90vw;
-                    width: 500px;
+                    min-width: 60%;
                     overflow-y: auto;
                     box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-                    margin-bottom: 5vh;
                 }
 
                 .help-popup ul {
@@ -1756,25 +1882,6 @@
                     background-color: #5a6268;
                 }
 
-                .example-chip {
-                    display: inline-block;
-                    padding: 2px 6px;
-                    border-radius: 12px;
-                    margin: 2px;
-                    font-size: 11px;
-                    font-weight: normal;
-                }
-
-                .example-keyword-chip {
-                    background-color: #28a745;
-                    color: white;
-                }
-
-                .example-exception-chip {
-                    background-color: #dc3545;
-                    color: white;
-                }
-
                 .preset-btn {
                     padding: 8px 16px;
                     font-size: 12px;
@@ -1822,7 +1929,6 @@
                     color: #ccc;
                     min-width: 100px;
                     flex-shrink: 0;
-                    font-weight: normal;
                 }
 
                 .color-picker {
@@ -1877,11 +1983,9 @@
                     background: none;
                     border: none;
                     color: #ccc;
-                    font-size: 16px;
+                    font-size: 20px;
                     cursor: pointer;
-                    margin-top: -2px;
-                    margin-bottom: 5px;
-                    padding: 2px;
+                    margin-top: -7px;
                     transition: color 0.2s, transform 0.2s;
                 }
 
@@ -2029,7 +2133,6 @@
                     border-radius: 4px;
                     cursor: pointer;
                     transition: background-color 0.2s;
-                    font-weight: normal;
                 }
 
                 .category-control-btn:hover {
@@ -2057,7 +2160,6 @@
                     color: #ccc;
                     cursor: pointer;
                     width: 100%;
-                    font-weight: normal;
                 }
 
                 .category-checkbox {
@@ -2067,11 +2169,28 @@
 
                 .category-name {
                     flex-grow: 1;
-                    font-weight: normal;
                 }
 
                 .category-checkbox-label:hover .category-name {
                     color: white;
+                }
+
+                .everything-blocked-message {
+                    text-align: center;
+                    padding: 40px 20px;
+                    color: #dc3545;
+                    font-size: 16px;
+                    background-color: rgba(220, 53, 69, 0.1);
+                    border: 2px dashed #dc3545;
+                    border-radius: 8px;
+                    margin: 20px 0;
+                    display: none;
+                }
+
+                .everything-blocked-message .subtitle {
+                    font-size: 14px;
+                    color: #666;
+                    margin-top: 8px;
                 }
             `;
             document.head.appendChild(style);
@@ -2095,7 +2214,7 @@
                 border: 2px solid #ccc;
                 border-radius: 10px;
                 display: none;
-                max-height: 90vh;
+                height: 90vh;
                 max-width: 95vw;
                 overflow-y: auto;
                 flex-direction: column;
@@ -2137,9 +2256,9 @@
                             </div>
                         </div>
                         <div class="keyword-input">
-                            <label>Must contain:</label>
+                            <p>Must contain:</p>
                             <div id="highlight-keyword-container"></div>
-                            <label>But not if it contains:</label>
+                            <p>But not if it contains:</p>
                             <div id="highlight-exception-container"></div>
                             <div class="button-group">
                                 <button id="add-keyword-highlight-btn" class="action-button">Add Highlight Rule</button>
@@ -2166,9 +2285,9 @@
                             </div>
                         </div>
                         <div class="keyword-input">
-                            <label>Must contain:</label>
+                            <p>Must contain:</label>
                             <div id="block-keyword-container"></div>
-                            <label>But not if it contains:</label>
+                            <p>But not if it contains:</p>
                             <div id="block-exception-container"></div>
                             <div class="button-group">
                                 <button id="add-keyword-block-btn" class="action-button">Add Block Rule</button>
@@ -2201,6 +2320,7 @@
                             </div>
                         </div>
 
+                        ${!isSukebei ? `
                         <div class="settings-section">
                             <h4>Auto-Import Lists</h4>
                             <div class="settings-buttons" style="flex-direction: column; align-items: flex-start;">
@@ -2220,6 +2340,7 @@
                                 </div>
                             </div>
                         </div>
+                        ` : ''}
 
                         <div class="settings-section">
                             <h4>Block Categories</h4>
@@ -2253,46 +2374,60 @@
                     <button class="help-close" id="help-close">×</button>
                     <h3>How to Use This Tool</h3>
 
-                    <p><strong>What This Tool Does:</strong></p>
+                    <p>What This Tool Does:</p>
                     <ul>
-                        <li><strong>Highlight:</strong> Makes matching titles stand out with a highlighted background</li>
-                        <li><strong>Block:</strong> Completely hides matching titles from view</li>
+                        <li>Highlight: Makes matching titles stand out with a highlighted background</li>
+                        <li>Block: Completely hides matching titles from view</li>
                     </ul>
 
-                    <p><strong>How to Create a Rule:</strong></p>
+                    <p>How to Create a Rule:</p>
                     <ul>
-                        <li>Type each word or phrase and press <strong>Enter</strong> to create a separate "chip"</li>
+                        <li>Type each word or phrase and press "Enter" to create a separate "chip"</li>
                         <li>You can click on any chip to edit it</li>
                         <li>Click the × on any chip to remove it</li>
                     </ul>
 
-                    <p><strong>How Rule Logic Works:</strong></p>
+                    <p>How Rule Logic Works:</p>
                     <ul>
-                        <li><strong>Must contain:</strong> ALL words/phrases must be found in a title (uses AND logic)</li>
-                        <li><strong>But not if it contains:</strong> If ANY of these words/phrases are found, the rule won't apply (uses OR logic)</li>
-                        <li><strong>Note:</strong> Matching is case-insensitive ("SubsPlease" is the same as "subsplease")</li>
+                        <li>Must contain: ALL words/phrases must be found in a title (uses AND logic)</li>
+                        <li>But not if it contains: If ANY of these words/phrases are found, the rule won't apply (uses OR logic)</li>
+                        <li>Note: Non-latin characters are (hopefully) fully supported. This includes spaces, meaning you could things like block "CR WEB-DL AVC" if so desired</li>
+                        <li>Note: Matching is case-insensitive ("SubsPlease" is the same as "subsplease")</li>
                     </ul>
 
-                    <p><strong>Example:</strong></p>
+                    <p>Example:</p>
                     <ul>
                         <li>If you wanted to highlight all 1080p SubsPlease releases except for unofficial batches, you could configure it as:</li>
                         <li style="margin-left: 20px; margin-top: 8px;">
-                            <strong>Must contain:</strong>
-                            <span class="example-chip example-keyword-chip">SubsPlease</span>
-                            <span class="example-chip example-keyword-chip">1080p</span>
+                            Must contain:
+                            <span class="colored-chip green-chip">SubsPlease</span>
+                            <span class="colored-chip green-chip">1080p</span>
                         </li>
                         <li style="margin-left: 20px;">
-                            <strong>But not if it contains:</strong>
-                            <span class="example-chip example-exception-chip">Unofficial Batch</span>
+                            But not if it contains:
+                            <span class="colored-chip red-chip">Unofficial Batch</span>
+                        </li>
+                        <li>If you wanted to block all VARYG releases except for Netflix, Amazon, or Disney+ (i.e. block all of VARYG's Crunchyroll and Hidive releases):</li>
+                        <li style="margin-left: 20px; margin-top: 8px;">
+                            Must contain:
+                            <span class="colored-chip green-chip">VARYG</span>
+                        </li>
+                        <li style="margin-left: 20px;">
+                            But not if it contains:
+                            <span class="colored-chip red-chip">NF</span>
+                            <span class="colored-chip red-chip">AMZN</span>
+                            <span class="colored-chip red-chip">DSNP</span>
                         </li>
                     </ul>
 
-                    <p><strong>Settings Menu:</strong></p>
+                    <p>Further settings:</p>
                     <ul>
-                        <li>Click the <strong>⚙ (gear icon)</strong> next to the close button to access the following additional settings</li>
-                        <li><strong>Highlight Colors:</strong> Customize the highlight colors for both light and dark themes</li>
-                        <li><strong>Auto-Import Lists:</strong> Instantly highlight common fansubber groups or block mini release groups, and receive automatic updates. Undesired groups can be manually removed</li>
-                        <li><strong>Custom Import/Export:</strong> Save your rules to a file or load previously saved configurations</li>
+                        <li>The "Enable" toggle in the top right turns the entire script on or off until turned back on</li>
+                        <li>Click the "⚙" (gear icon) next to the close button to access the following additional settings:</li>
+                        <li>Highlight Colors: Customize the highlight colors for both light and dark themes</li>
+                        <li>Auto-Import Lists: Instantly highlight common fansubber groups or block mini release groups, and receive automatic updates. Undesired groups can be removed with the "Remove" button</li>
+                        <li>Block Categories: Block undesired categories (e.g. "Anime - Anime Music Video") when browsing the homepage or a category group</li>
+                        <li>Custom Import/Export: Save your rules to a file or load previously saved configurations</li>
                     </ul>
                 </div>
 
@@ -2702,12 +2837,12 @@
 
         const keywordChips = keywordParts
             .filter(k => k && k.trim())
-            .map(k => `<span class="keyword-chip">${sanitizeInput(k)}</span>`)
+            .map(k => `<span class="colored-chip green-chip">${sanitizeInput(k)}</span>`)
             .join('');
 
         const exceptionChips = exceptionParts
             .filter(e => e && e.trim())
-            .map(e => `<span class="exception-chip">${sanitizeInput(e)}</span>`)
+            .map(e => `<span class="colored-chip red-chip">${sanitizeInput(e)}</span>`)
             .join('');
 
         const li = document.createElement('li');
