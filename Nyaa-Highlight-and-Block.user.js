@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Nyaa - Highlight & Block
-// @version      1.03
+// @version      1.04
 // @description  Highlight and block releases on nyaa.si
 // @author       Animorphs
 // @namespace    https://github.com/Animorphs/Nyaa-Highlight-and-Block
@@ -123,6 +123,7 @@
             [["[MiniMTBB]"], []],
             [["[neoDESU]"], []],
             [["[neoHEVC]"], []],
+            [["Rapta"], []],
             [["[Tenrai-Sensei]"], []],
             [["[TRC]"], []]
         ]
@@ -1413,6 +1414,76 @@
         input.click();
     };
 
+    /**
+     * Reset all settings to default values
+     */
+    const resetToDefaultSettings = () => {
+        const confirmed = confirm(
+            'Warning: This will reset ALL settings to their original defaults.\n\n' +
+            'This will:\n' +
+            '• Reset highlight and block lists to original limited sets\n' +
+            '• Clear all blacklists\n' +
+            '• Turn off fansubbers and minis auto-import toggles\n' +
+            '• Reset highlight colors to defaults\n' +
+            '• Clear blocked categories\n' +
+            '• Enable the script if it was disabled\n\n' +
+            'This action cannot be undone. Do you want to continue?'
+        );
+
+        if (confirmed) {
+            // Reset to original defaults
+            AppState.keywordsHighlight = [...CONFIG.DEFAULTS.HIGHLIGHT];
+            AppState.keywordsBlock = [...CONFIG.DEFAULTS.BLOCK];
+            AppState.isEnabled = true;
+            AppState.fansubbersToggle = false;
+            AppState.minisToggle = false;
+            AppState.fansubbersBlacklist = [];
+            AppState.minisBlacklist = [];
+            AppState.blockedCategories = [];
+            AppState.colors = {
+                light: '#F0E68C', // khaki
+                dark: '#330033' // purple
+            };
+
+            // Save all settings
+            AppState.saveHighlightKeywords();
+            AppState.saveBlockKeywords();
+            AppState.saveEnabledState();
+            AppState.saveToggleStates();
+            AppState.saveBlacklists();
+            AppState.saveBlockedCategories();
+            AppState.saveColors();
+
+            // Exit edit mode if active
+            exitEditMode();
+
+            // Update UI elements
+            updateRuleLists();
+            updateDisplay();
+
+            // Update toggle switches
+            const toggleSwitch = document.getElementById('toggle-highlight-block-switch');
+            const fansubbersToggle = document.getElementById('fansubbers-toggle');
+            const minisToggle = document.getElementById('minis-toggle');
+
+            if (toggleSwitch) toggleSwitch.checked = true;
+            if (fansubbersToggle) fansubbersToggle.checked = false;
+            if (minisToggle) minisToggle.checked = false;
+
+            // Update color pickers
+            const lightPicker = document.getElementById('light-color-picker');
+            const darkPicker = document.getElementById('dark-color-picker');
+            if (lightPicker) lightPicker.value = AppState.colors.light;
+            if (darkPicker) darkPicker.value = AppState.colors.dark;
+
+            // Update category checkboxes
+            const categoryCheckboxes = document.querySelectorAll('.category-checkbox');
+            categoryCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+        }
+    };
+
     // ============================================================================
     // COLOR PICKER HANDLERS
     // ============================================================================
@@ -2367,6 +2438,13 @@
                                 <button id="export-btn" class="settings-button" title="Export configuration to file">Export Configuration</button>
                             </div>
                         </div>
+
+                        <div class="settings-section">
+                            <h4>Reset Settings</h4>
+                            <div class="settings-buttons">
+                                <button id="reset-to-defaults-btn" class="settings-button" style="background-color: #dc3545; border-color: #c82333;" title="Reset all settings to their original defaults">Reset to Default Settings</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -2737,6 +2815,12 @@
 
                     updateDisplay();
                 });
+            }
+
+            // Reset to defaults button
+            const resetBtn = document.getElementById('reset-to-defaults-btn');
+            if (resetBtn) {
+                resetBtn.addEventListener('click', resetToDefaultSettings);
             }
 
             updateRuleLists();
