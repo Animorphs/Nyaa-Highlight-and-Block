@@ -1,17 +1,18 @@
 // ==UserScript==
 // @name         Nyaa - Highlight & Block
-// @version      1.05
+// @version      1.06
 // @description  Highlight and block releases on nyaa.si
 // @author       Animorphs
 // @namespace    https://github.com/Animorphs/Nyaa-Highlight-and-Block
-// @match        https://nyaa.si/*
-// @match        https://sukebei.nyaa.si/*
-// @exclude      https://nyaa.si/view/*
-// @exclude      https://nyaa.si/profile
-// @exclude      https://nyaa.si/upload
-// @exclude      https://nyaa.si/rules
-// @exclude      https://nyaa.si/help
+// @icon         https://nyaa.si/static/favicon.png
+// @match        https://nyaa.si/
+// @match        https://nyaa.si/?*
+// @match        https://nyaa.si/user/*
+// @match        https://sukebei.nyaa.si/
+// @match        https://sukebei.nyaa.si/?*
+// @match        https://sukebei.nyaa.si/user/*
 // @exclude      https://nyaa.si/?page=rss*
+// @exclude      https://sukebei.nyaa.si/?page=rss*
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @updateURL    https://raw.githubusercontent.com/Animorphs/Nyaa-Highlight-and-Block/master/Nyaa-Highlight-and-Block.user.js
@@ -77,8 +78,10 @@
             [["[GJM]"], []],
             [["[h-b]"], []],
             [["[Half-Baked]"], []],
+            [["[Heartside]"], []],
             [["[Inka-Subs]"], []],
             [["[Kaleido-subs]"], []],
+            [["[Lazyleido]"], []],
             [["[LonelyChaser]"], []],
             [["[MaruChanSubs]"], []],
             [["[McBalls]"], []],
@@ -103,6 +106,7 @@
             [["[sgt]"], []],
             [["[Starbez]"], []],
             [["[Stardust]"], []],
+            [["[tracen]"], []],
             [["[Vodes]"], []],
             [["[WakuTomete]"], []],
             [["[WastedChaser]"], []],
@@ -3023,3 +3027,4 @@
     }
 
 })();
+
