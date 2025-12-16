@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Nyaa - Highlight & Block
-// @version      1.06
+// @version      1.07
 // @description  Highlight and block releases on nyaa.si
 // @author       Animorphs
 // @namespace    https://github.com/Animorphs/Nyaa-Highlight-and-Block
@@ -893,8 +893,8 @@
      * @param {Element} row - Row element
      */
     const applyHighlight = (row) => {
-        // Don't highlight rows with class="info"
-        if (row.classList.contains('info')) {
+        // Don't highlight rows with class="best", for nyaablue
+        if (row.classList.contains('best')) {
             return;
         }
 
@@ -907,20 +907,33 @@
         row.style.backgroundColor = AppState.getCurrentHighlightColor();
     };
 
+    const getBestClass = (row) => {
+        if (row.classList.contains('best-alt')) return 'best-alt';
+        if (row.classList.contains('best')) return 'best';
+        return null;
+    };
+
     /**
      * Reset row appearance to original state
      * @param {Element} row - Row element
      */
-    const resetRowAppearance = (row) => {
-        // Don't modify rows with class="info", for nyaablue
-        if (row.classList.contains('info')) {
+    const resetRowAppearance = (row, force = false) => {
+        const bestClass = getBestClass(row);
+
+        if (!force && bestClass) {
             return;
         }
 
         if (row.hasAttribute('data-old-class')) {
             row.className = row.getAttribute('data-old-class');
+
+            if (bestClass) {
+                row.classList.add(bestClass);
+            }
+
             row.removeAttribute('data-old-class');
         }
+
         row.style.backgroundColor = '';
         row.style.display = '';
     };
@@ -1538,29 +1551,49 @@
     };
 
     // ============================================================================
-    // THEME MONITORING
+    // THEME AND NYAABLUE MONITORING
     // ============================================================================
 
     /**
-     * Monitor body class changes for theme switching
+     * Monitor body class changes for theme switching and nyaablue
      */
-    const initThemeMonitoring = () => {
-        // Create a MutationObserver to watch for class changes on body
+    const initThemeAndNyaaBlueMonitoring = () => {
         const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                    // Body class changed, update highlights with new theme colors
-                    updateDisplay();
+            for (const mutation of mutations) {
+                if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') {
+                    continue;
                 }
-            });
+
+                const target = mutation.target;
+
+                // Theme switch
+                if (target === document.body) {
+                    updateDisplay();
+                    continue;
+                }
+
+                // Nyaablue load
+                if (target.matches?.('tr') && getBestClass(target)) {
+                    resetRowAppearance(target, true);
+                }
+            }
         });
 
-        // Start observing body element for class attribute changes
+        // Observe body for theme changes
         observer.observe(document.body, {
             attributes: true,
             attributeFilter: ['class']
         });
+
+        // Observe all existing rows for late-added classes
+        document.querySelectorAll('tr').forEach(row => {
+            observer.observe(row, {
+                attributes: true,
+                attributeFilter: ['class']
+            });
+        });
     };
+
 
     // ============================================================================
     // UI MANAGEMENT
@@ -3010,7 +3043,7 @@
             autoImportMinis();
 
             updateDisplay();
-            initThemeMonitoring();
+            initThemeAndNyaaBlueMonitoring();
 
             console.log('Nyaa Highlight & Block script initialized successfully');
         } catch (error) {
@@ -3027,4 +3060,3 @@
     }
 
 })();
-
