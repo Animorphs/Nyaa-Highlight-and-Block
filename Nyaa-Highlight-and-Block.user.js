@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Nyaa - Highlight & Block
-// @version      1.09
+// @version      1.10
 // @description  Highlight and block releases on nyaa.si
 // @author       Animorphs
 // @namespace    https://github.com/Animorphs/Nyaa-Highlight-and-Block
@@ -35,7 +35,9 @@
             MINIS_TOGGLE: 'minisToggle',
             FANSUBBERS_BLACKLIST: 'fansubbersBlacklist',
             MINIS_BLACKLIST: 'minisBlacklist',
-            BLOCKED_CATEGORIES: isSukebei ? 'blockedCategories_sukebei' : 'blockedCategories'
+            BLOCKED_CATEGORIES: isSukebei ? 'blockedCategories_sukebei' : 'blockedCategories',
+            SHOW_AUTO_RULES: 'showAutoRules',
+            SHOW_MANUAL_RULES: 'showManualRules'
         },
         DEFAULTS: {
             HIGHLIGHT: isSukebei ? [
@@ -65,6 +67,7 @@
             [["[BlurayDesuYo]"], []],
             [["[Cait-Sidhe]"], []],
             [["[cappybara]"], []],
+            [["[chasa]"], []],
             [["[Chihiro]"], []],
             [["[Commie]"], []],
             [["[Cyan]"], []],
@@ -72,6 +75,7 @@
             [["[DarkWispers]"], []],
             [["[derpie]"], []],
             [["[FLE]"], []],
+            [["[Foxtrot]"], []],
             [["[Freehold]"], []],
             [["[GHS]"], []],
             [["[Glue]"], []],
@@ -87,6 +91,7 @@
             [["[MaruChanSubs]"], []],
             [["[McBalls]"], []],
             [["[Mocha]"], []],
+            [["[mSubs]"], []],
             [["[MTBB]"], []],
             [["[Noiy]"], []],
             [["[Ny]"], []],
@@ -103,7 +108,7 @@
             [["[sam]"], []],
             [["[Seigyoku]"], []],
             [["(shiteater)"], []],
-            [["[Some-Stuffs]"], ["Pocket Monsters","Poké"]], // Exclude pokemon due to volume that probably isn't relevant to most
+            [["[Some-Stuffs]"], ["Pocket Monsters", "Poké"]], // Exclude pokemon due to volume that probably isn't relevant to most
             [["[sgt]"], []],
             [["[Starbez]"], []],
             [["[Stardust]"], []],
@@ -126,7 +131,7 @@
             [["[DB]"], []],
             [["[DKB]"], []],
             [["[EMBER]"], []],
-            [["[Erai-raws]","WEBRip"], []],
+            [["[Erai-raws]", "WEBRip"], []],
             [["[JacobSwaggedUp]"], []],
             [["[MiniMTBB]"], []],
             [["[neoDESU]"], []],
@@ -364,6 +369,8 @@
         fansubbersBlacklist: JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.FANSUBBERS_BLACKLIST)) || [],
         minisBlacklist: JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.MINIS_BLACKLIST)) || [],
         blockedCategories: JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.BLOCKED_CATEGORIES)) || [],
+        showAutoRules: JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.SHOW_AUTO_RULES)) ?? true,
+        showManualRules: JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.SHOW_MANUAL_RULES)) ?? true,
         editMode: {
             isEditing: false,
             type: null,
@@ -371,46 +378,28 @@
             originalData: null
         },
 
-        /**
-         * Save highlight keywords to localStorage
-         */
         saveHighlightKeywords() {
             localStorage.setItem(CONFIG.STORAGE_KEYS.HIGHLIGHT, JSON.stringify(this.keywordsHighlight));
         },
 
-        /**
-         * Save block keywords to localStorage
-         */
         saveBlockKeywords() {
             localStorage.setItem(CONFIG.STORAGE_KEYS.BLOCK, JSON.stringify(this.keywordsBlock));
         },
 
-        /**
-         * Save enabled state to localStorage
-         */
         saveEnabledState() {
             localStorage.setItem('isEnabled', JSON.stringify(this.isEnabled));
         },
 
-        /**
-         * Save toggle states to localStorage
-         */
         saveToggleStates() {
             localStorage.setItem(CONFIG.STORAGE_KEYS.FANSUBBERS_TOGGLE, JSON.stringify(this.fansubbersToggle));
             localStorage.setItem(CONFIG.STORAGE_KEYS.MINIS_TOGGLE, JSON.stringify(this.minisToggle));
         },
 
-        /**
-         * Save blacklists to localStorage
-         */
         saveBlacklists() {
             localStorage.setItem(CONFIG.STORAGE_KEYS.FANSUBBERS_BLACKLIST, JSON.stringify(this.fansubbersBlacklist));
             localStorage.setItem(CONFIG.STORAGE_KEYS.MINIS_BLACKLIST, JSON.stringify(this.minisBlacklist));
         },
 
-        /**
-         * Reset edit mode to default state
-         */
         resetEditMode() {
             this.editMode = {
                 isEditing: false,
@@ -420,70 +409,48 @@
             };
         },
 
-        /**
-         * Color settings
-         */
         colors: {
             light: localStorage.getItem('highlightColorLight') || '#F0E68C', // khaki
             dark: localStorage.getItem('highlightColorDark') || '#330033' // purple
         },
 
-        /**
-         * Save highlight colors to localStorage
-         */
         saveColors() {
             localStorage.setItem('highlightColorLight', this.colors.light);
             localStorage.setItem('highlightColorDark', this.colors.dark);
         },
 
-        /**
-         * Get current highlight color based on theme
-         */
         getCurrentHighlightColor() {
             return this.isDarkMode() ? this.colors.dark : this.colors.light;
         },
 
-        /**
-         * Detect if current theme is dark mode
-         */
         isDarkMode() {
             const body = document.body;
             return body.classList.contains('dark');
         },
 
-        /**
-         * Save fansubbers toggle state
-         */
         saveFansubbersToggle() {
             localStorage.setItem(CONFIG.STORAGE_KEYS.FANSUBBERS_TOGGLE, JSON.stringify(this.fansubbersToggle));
         },
 
-        /**
-         * Save minis toggle state
-         */
         saveMinisToggle() {
             localStorage.setItem(CONFIG.STORAGE_KEYS.MINIS_TOGGLE, JSON.stringify(this.minisToggle));
         },
 
-        /**
-         * Save fansubbers blacklist
-         */
         saveFansubbersBlacklist() {
             localStorage.setItem(CONFIG.STORAGE_KEYS.FANSUBBERS_BLACKLIST, JSON.stringify(this.fansubbersBlacklist));
         },
 
-        /**
-         * Save minis blacklist
-         */
         saveMinisBlacklist() {
             localStorage.setItem(CONFIG.STORAGE_KEYS.MINIS_BLACKLIST, JSON.stringify(this.minisBlacklist));
         },
 
-        /**
-         * Save blocked categories to localStorage
-        */
         saveBlockedCategories() {
             localStorage.setItem(CONFIG.STORAGE_KEYS.BLOCKED_CATEGORIES, JSON.stringify(this.blockedCategories));
+        },
+
+        saveRuleFilters() {
+            localStorage.setItem(CONFIG.STORAGE_KEYS.SHOW_AUTO_RULES, JSON.stringify(this.showAutoRules));
+            localStorage.setItem(CONFIG.STORAGE_KEYS.SHOW_MANUAL_RULES, JSON.stringify(this.showManualRules));
         }
     };
 
@@ -661,7 +628,7 @@
             if (this.input) {
                 this.input.placeholder = this.chips.length === 0
                     ? this.placeholder
-                    : 'Press Enter to add more...';
+                    : 'Add additional word or phrase';
             }
         }
     }
@@ -962,7 +929,7 @@
                 messageElement.className = 'everything-blocked-message';
                 messageElement.innerHTML = `
                     🚫 Everything's blocked! Maybe your blocking is a little too aggressive...
-                    <div class="subtitle">Try adjusting your block rules or category filters in the <a href="#" id="open-settings-link" style="color: #007bff; text-decoration: underline; cursor: pointer;">settings</a>.</div>
+                    <div class="subtitle">Try adjusting your block rules or category filters in the <a href="#" id="open-settings-link" class="link-inline">settings</a>.</div>
                 `;
 
                 // Insert after the torrent table
@@ -989,7 +956,6 @@
                 newSettingsLink.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('Settings link clicked'); // Debug log
 
                     // Make sure GUI is visible first
                     if (UI.guiContainer.style.display !== 'flex') {
@@ -1164,7 +1130,7 @@
             // Add new rule if not duplicate
             const isDuplicate = AppState.keywordsHighlight.some(([existingKeywords, existingExceptions]) => {
                 return arraysEqual(existingKeywords, keywordParts) &&
-                       arraysEqual(existingExceptions, exceptionParts);
+                    arraysEqual(existingExceptions, exceptionParts);
             });
 
             if (!isDuplicate) {
@@ -1223,7 +1189,7 @@
             // Add new rule if not duplicate
             const isDuplicate = AppState.keywordsBlock.some(([existingKeywords, existingExceptions]) => {
                 return arraysEqual(existingKeywords, keywordParts) &&
-                       arraysEqual(existingExceptions, exceptionParts);
+                    arraysEqual(existingExceptions, exceptionParts);
             });
 
             if (!isDuplicate) {
@@ -1241,6 +1207,45 @@
     };
 
     /**
+     * Remove a blacklist rule
+     * @param {string} type - 'fansubbers' or 'minis'
+     * @param {number} index - Rule index
+     */
+    const removeBlacklistRule = (type, index) => {
+        const list = type === 'fansubbers' ? AppState.fansubbersBlacklist : AppState.minisBlacklist;
+        if (!list || index < 0 || index >= list.length) return;
+        const removedRule = list[index];
+        list.splice(index, 1);
+        AppState.saveBlacklists();
+
+        if (type === 'fansubbers') {
+            const isDuplicate = AppState.keywordsHighlight.some(([existingKeywords, existingExceptions]) => {
+                return arraysEqual(existingKeywords, removedRule[0]) &&
+                    arraysEqual(existingExceptions, removedRule[1]);
+            });
+            if (!isDuplicate) {
+                AppState.keywordsHighlight.push([removedRule[0], removedRule[1]]);
+                sortRules(AppState.keywordsHighlight);
+                AppState.saveHighlightKeywords();
+            }
+        } else {
+            const isDuplicate = AppState.keywordsBlock.some(([existingKeywords, existingExceptions]) => {
+                return arraysEqual(existingKeywords, removedRule[0]) &&
+                    arraysEqual(existingExceptions, removedRule[1]);
+            });
+            if (!isDuplicate) {
+                AppState.keywordsBlock.push([removedRule[0], removedRule[1]]);
+                sortRules(AppState.keywordsBlock);
+                AppState.saveBlockKeywords();
+            }
+        }
+
+        updateBlacklistLists();
+        updateRuleLists();
+        updateDisplay();
+    };
+
+    /**
      * Sort rules alphabetically by first keyword, ignoring leading brackets and parentheses
      * @param {Array} rules - Rules array to sort
      */
@@ -1251,6 +1256,23 @@
             const keywordB = b[0].join(' ').toLowerCase().replace(/^[\[\(]/, '');
             return keywordA.localeCompare(keywordB);
         });
+    };
+
+    /**
+     * Check if a rule matches the auto-import presets for its type
+     * @param {string} type - 'highlight' or 'block'
+     * @param {Array} keywordParts
+     * @param {Array} exceptionParts
+     * @returns {boolean}
+     */
+    const isPresetRuleForType = (type, keywordParts, exceptionParts) => {
+        const presets = type === 'highlight' ? PRESETS.FANSUBBERS : PRESETS.MINIS;
+        const defaults = type === 'highlight' ? CONFIG.DEFAULTS.HIGHLIGHT : CONFIG.DEFAULTS.BLOCK;
+        const matches = (rule) =>
+            arraysEqual(rule[0], keywordParts) &&
+            arraysEqual(rule[1], exceptionParts);
+
+        return presets.some(matches) || defaults.some(matches);
     };
 
     /**
@@ -1328,7 +1350,33 @@
     };
 
 
-        /**
+    /**
+     * Merge incoming rules into target list, skipping duplicates
+     * @param {Array} targetRules - Existing rules array
+     * @param {Array} incomingRules - Rules to merge in
+     * @returns {number} Count of rules added
+     */
+    const mergeRules = (targetRules, incomingRules) => {
+        let added = 0;
+        (incomingRules || []).forEach((newRule) => {
+            const isDuplicate = targetRules.some(existingRule =>
+                arraysEqual(existingRule[0], newRule[0]) &&
+                arraysEqual(existingRule[1], newRule[1])
+            );
+            if (!isDuplicate) {
+                targetRules.push([...newRule]);
+                added++;
+            }
+        });
+
+        if (added > 0) {
+            sortRules(targetRules);
+        }
+
+        return added;
+    };
+
+    /**
      * Export configuration to JSON file
      */
     const exportConfiguration = () => {
@@ -1338,7 +1386,12 @@
             keywordsHighlight: AppState.keywordsHighlight,
             keywordsBlock: AppState.keywordsBlock,
             isEnabled: AppState.isEnabled,
-            colors: AppState.colors
+            colors: AppState.colors,
+            fansubbersToggle: AppState.fansubbersToggle,
+            minisToggle: AppState.minisToggle,
+            fansubbersBlacklist: AppState.fansubbersBlacklist,
+            minisBlacklist: AppState.minisBlacklist,
+            blockedCategories: AppState.blockedCategories
         };
 
 
@@ -1354,6 +1407,207 @@
     };
 
     /**
+     * Show import mode modal and resolve with chosen mode
+     * @returns {Promise<'merge'|'override'|null>}
+     */
+    const openImportModeModal = () => {
+        return new Promise((resolve) => {
+            const overlay = document.getElementById('import-mode-modal');
+            const mergeBtn = document.getElementById('import-mode-merge');
+            const overrideBtn = document.getElementById('import-mode-override');
+            const cancelBtn = document.getElementById('import-mode-cancel');
+            const closeBtn = document.getElementById('import-mode-close');
+
+            if (!overlay || !mergeBtn || !overrideBtn || !cancelBtn || !closeBtn) {
+                resolve(null);
+                return;
+            }
+
+            const cleanup = (result) => {
+                overlay.style.display = 'none';
+                mergeBtn.removeEventListener('click', onMerge);
+                overrideBtn.removeEventListener('click', onOverride);
+                cancelBtn.removeEventListener('click', onCancel);
+                closeBtn.removeEventListener('click', onCancel);
+                overlay.removeEventListener('click', onOverlayClick);
+                resolve(result);
+            };
+
+            const onMerge = (e) => {
+                e.preventDefault();
+                cleanup('merge');
+            };
+
+            const onOverride = (e) => {
+                e.preventDefault();
+                cleanup('override');
+            };
+
+            const onCancel = (e) => {
+                e.preventDefault();
+                cleanup(null);
+            };
+
+            const onOverlayClick = (e) => {
+                if (e.target === overlay) {
+                    cleanup(null);
+                }
+            };
+
+            mergeBtn.addEventListener('click', onMerge);
+            overrideBtn.addEventListener('click', onOverride);
+            cancelBtn.addEventListener('click', onCancel);
+            closeBtn.addEventListener('click', onCancel);
+            overlay.addEventListener('click', onOverlayClick);
+
+            overlay.style.display = 'flex';
+        });
+    };
+
+    /**
+     * Show import confirm modal and resolve with confirmation
+     * @param {object} summary - Summary of import contents
+     * @param {string} mode - 'merge' or 'override'
+     * @returns {Promise<boolean>}
+     */
+    const openImportConfirmModal = (summary, mode) => {
+        return new Promise((resolve) => {
+            const overlay = document.getElementById('import-confirm-modal');
+            const summaryEl = document.getElementById('import-confirm-summary');
+            const warningEl = document.getElementById('import-confirm-warning');
+            const yesBtn = document.getElementById('import-confirm-yes');
+            const noBtn = document.getElementById('import-confirm-no');
+            const closeBtn = document.getElementById('import-confirm-close');
+
+            if (!overlay || !summaryEl || !warningEl || !yesBtn || !noBtn || !closeBtn) {
+                resolve(false);
+                return;
+            }
+
+            const isDefaultColors = (colors) => {
+                if (!colors) return true;
+                const light = colors.light || '#F0E68C';
+                const dark = colors.dark || '#330033';
+                return light === '#F0E68C' && dark === '#330033';
+            };
+
+            const colorNote = summary.hasColors && !isDefaultColors(summary.colors)
+                ? ', Custom colors: Yes.'
+                : '.';
+
+            summaryEl.textContent =
+                mode === 'merge'
+                    ? `Import contains: ${summary.highlightCount} highlight rules, ${summary.blockCount} block rules.`
+                    : `Import contains: ${summary.highlightCount} highlight rules, ${summary.blockCount} block rules${colorNote}`;
+
+            warningEl.textContent =
+                mode === 'merge'
+                    ? 'Merge will keep your current settings and add rules from the file.'
+                    : 'Override will replace ALL your current settings with the file.';
+
+            const cleanup = (result) => {
+                overlay.style.display = 'none';
+                yesBtn.removeEventListener('click', onYes);
+                noBtn.removeEventListener('click', onNo);
+                closeBtn.removeEventListener('click', onNo);
+                overlay.removeEventListener('click', onOverlayClick);
+                resolve(result);
+            };
+
+            const onYes = (e) => {
+                e.preventDefault();
+                cleanup(true);
+            };
+
+            const onNo = (e) => {
+                e.preventDefault();
+                cleanup(false);
+            };
+
+            const onOverlayClick = (e) => {
+                if (e.target === overlay) {
+                    cleanup(false);
+                }
+            };
+
+            yesBtn.addEventListener('click', onYes);
+            noBtn.addEventListener('click', onNo);
+            closeBtn.addEventListener('click', onNo);
+            overlay.addEventListener('click', onOverlayClick);
+
+            overlay.style.display = 'flex';
+        });
+    };
+
+    /**
+     * Show notice modal with optional cancel button
+     * @param {object} options
+     * @param {string} options.title
+     * @param {string} options.message
+     * @param {boolean} [options.showCancel=false]
+     * @returns {Promise<boolean>}
+     */
+    const openNoticeModal = ({ title, message, showCancel = false, okText = 'OK', cancelText = 'Cancel' }) => {
+        return new Promise((resolve) => {
+            const overlay = document.getElementById('notice-modal');
+            const titleEl = document.getElementById('notice-title');
+            const messageEl = document.getElementById('notice-message');
+            const okBtn = document.getElementById('notice-ok');
+            const cancelBtn = document.getElementById('notice-cancel');
+            const closeBtn = document.getElementById('notice-close');
+
+            if (!overlay || !titleEl || !messageEl || !okBtn || !cancelBtn || !closeBtn) {
+                resolve(false);
+                return;
+            }
+
+            titleEl.textContent = title || 'Notice';
+            messageEl.textContent = message || '';
+
+            if (showCancel) {
+                cancelBtn.classList.remove('hb-hidden');
+            } else {
+                cancelBtn.classList.add('hb-hidden');
+            }
+
+            const cleanup = (result) => {
+                overlay.style.display = 'none';
+                okBtn.removeEventListener('click', onOk);
+                cancelBtn.removeEventListener('click', onCancel);
+                closeBtn.removeEventListener('click', onCancel);
+                overlay.removeEventListener('click', onOverlayClick);
+                resolve(result);
+            };
+
+            const onOk = (e) => {
+                e.preventDefault();
+                cleanup(true);
+            };
+
+            const onCancel = (e) => {
+                e.preventDefault();
+                cleanup(false);
+            };
+
+            const onOverlayClick = (e) => {
+                if (e.target === overlay) {
+                    cleanup(false);
+                }
+            };
+
+            okBtn.textContent = okText;
+            cancelBtn.textContent = cancelText;
+
+            okBtn.addEventListener('click', onOk);
+            cancelBtn.addEventListener('click', onCancel);
+            closeBtn.addEventListener('click', onCancel);
+            overlay.addEventListener('click', onOverlayClick);
+
+            overlay.style.display = 'flex';
+        });
+    };
+
+    /**
      * Import configuration from JSON file
      */
     const importConfiguration = () => {
@@ -1361,95 +1615,142 @@
         input.type = 'file';
         input.accept = '.json';
 
-        input.onchange = (event) => {
-            const file = event.target.files[0];
-            if (!file) return;
-
+        const handleFile = (mode, file) => {
             const reader = new FileReader();
-            reader.onload = (e) => {
+            reader.onload = async (e) => {
                 try {
                     const config = JSON.parse(e.target.result);
 
                     // Validate the configuration structure
                     if (!config.keywordsHighlight || !config.keywordsBlock) {
-                        alert('Error: Invalid configuration file format.');
+                        await openNoticeModal({
+                            title: 'Import Error',
+                            message: 'Invalid configuration file format.'
+                        });
                         return;
                     }
 
-                    // Show confirmation dialog
-                    const confirmed = confirm(
-                        'Warning: This will replace ALL your current settings.\n\n' +
-                        `Import contains:\n` +
-                        `• ${config.keywordsHighlight.length} highlight rules\n` +
-                        `• ${config.keywordsBlock.length} block rules\n` +
-                        `• Custom colors: ${config.colors ? 'Yes' : 'No'}\n\n` +
-                        'Do you want to continue?'
-                    );
+                    const highlightCount = (config.keywordsHighlight || []).length;
+                    const blockCount = (config.keywordsBlock || []).length;
 
-                    if (confirmed) {
-                        // Import the configuration
-                        AppState.keywordsHighlight = config.keywordsHighlight || [];
-                        AppState.keywordsBlock = config.keywordsBlock || [];
-                        AppState.isEnabled = config.isEnabled !== undefined ? config.isEnabled : true;
+                    const confirmed = await openImportConfirmModal({
+                        highlightCount,
+                        blockCount,
+                        hasColors: !!config.colors,
+                        colors: config.colors
+                    }, mode);
 
-                        // Import colors if available
-                        if (config.colors) {
-                            AppState.colors = {
-                                light: config.colors.light || '#F0E68C',
-                                dark: config.colors.dark || '#330033'
-                            };
-                        }
+                    if (!confirmed) return;
 
-                        // Save everything
+                    if (mode === 'merge') {
+                        const addedHighlights = mergeRules(AppState.keywordsHighlight, config.keywordsHighlight);
+                        const addedBlocks = mergeRules(AppState.keywordsBlock, config.keywordsBlock);
+
                         AppState.saveHighlightKeywords();
                         AppState.saveBlockKeywords();
-                        AppState.saveEnabledState();
-                        AppState.saveColors();
 
-                        // Update UI
                         updateRuleLists();
                         updateDisplay();
 
-                        // Update color pickers
-                        const lightPicker = document.getElementById('light-color-picker');
-                        const darkPicker = document.getElementById('dark-color-picker');
-                        if (lightPicker) lightPicker.value = AppState.colors.light;
-                        if (darkPicker) darkPicker.value = AppState.colors.dark;
-
-                        // Update toggle switch
-                        const toggleSwitch = document.getElementById('toggle-highlight-block-switch');
-                        if (toggleSwitch) {
-                            toggleSwitch.checked = AppState.isEnabled;
-                        }
-
-                        alert('Configuration imported successfully!');
+                        await openNoticeModal({
+                            title: 'Import Complete',
+                            message:
+                                'Merge complete.\n' +
+                                `- Added ${addedHighlights} highlight rules\n` +
+                                `- Added ${addedBlocks} block rules`
+                        });
+                        return;
                     }
+
+                    AppState.keywordsHighlight = config.keywordsHighlight || [];
+                    AppState.keywordsBlock = config.keywordsBlock || [];
+                    AppState.isEnabled = config.isEnabled !== undefined ? config.isEnabled : true;
+                    AppState.fansubbersToggle = config.fansubbersToggle ?? false;
+                    AppState.minisToggle = config.minisToggle ?? false;
+                    AppState.fansubbersBlacklist = config.fansubbersBlacklist || [];
+                    AppState.minisBlacklist = config.minisBlacklist || [];
+                    AppState.blockedCategories = config.blockedCategories || [];
+
+                    if (config.colors) {
+                        AppState.colors = {
+                            light: config.colors.light || '#F0E68C',
+                            dark: config.colors.dark || '#330033'
+                        };
+                    }
+
+                    AppState.saveHighlightKeywords();
+                    AppState.saveBlockKeywords();
+                    AppState.saveEnabledState();
+                    AppState.saveToggleStates();
+                    AppState.saveBlacklists();
+                    AppState.saveBlockedCategories();
+                    AppState.saveColors();
+
+                    updateRuleLists();
+                    updateDisplay();
+
+                    const lightPicker = document.getElementById('light-color-picker');
+                    const darkPicker = document.getElementById('dark-color-picker');
+                    if (lightPicker) lightPicker.value = AppState.colors.light;
+                    if (darkPicker) darkPicker.value = AppState.colors.dark;
+
+                    const toggleSwitch = document.getElementById('toggle-highlight-block-switch');
+                    const fansubbersToggle = document.getElementById('fansubbers-toggle');
+                    const minisToggle = document.getElementById('minis-toggle');
+                    if (toggleSwitch) toggleSwitch.checked = AppState.isEnabled;
+                    if (fansubbersToggle) fansubbersToggle.checked = AppState.fansubbersToggle;
+                    if (minisToggle) minisToggle.checked = AppState.minisToggle;
+
+                    await openNoticeModal({
+                        title: 'Import Complete',
+                        message: 'Configuration imported successfully!'
+                    });
                 } catch (error) {
-                    alert('Error: Could not parse configuration file. Please ensure it\'s a valid JSON file.');
+                    await openNoticeModal({
+                        title: 'Import Error',
+                        message: 'Could not parse configuration file. Please ensure it\'s a valid JSON file.'
+                    });
                     console.error('Import error:', error);
                 }
             };
             reader.readAsText(file);
         };
 
-        input.click();
+        input.onchange = async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            // mode stored on input
+            const mode = input.dataset.importMode;
+            if (!mode) return;
+            handleFile(mode, file);
+        };
+
+        openImportModeModal().then((mode) => {
+            if (!mode) return;
+            input.dataset.importMode = mode;
+            input.click();
+        });
     };
 
     /**
      * Reset all settings to default values
      */
-    const resetToDefaultSettings = () => {
-        const confirmed = confirm(
-            'Warning: This will reset ALL settings to their original defaults.\n\n' +
-            'This will:\n' +
-            '• Reset highlight and block lists to original limited sets\n' +
-            '• Clear all blacklists\n' +
-            '• Turn off fansubbers and minis auto-import toggles\n' +
-            '• Reset highlight colors to defaults\n' +
-            '• Clear blocked categories\n' +
-            '• Enable the script if it was disabled\n\n' +
-            'This action cannot be undone. Do you want to continue?'
-        );
+    const resetToDefaultSettings = async () => {
+        const confirmed = await openNoticeModal({
+            title: 'Reset Settings',
+            message:
+                'Warning: This will reset ALL settings to their original defaults.\n' +
+                'If you haven\'t already, it may be worth exporting your configuration first.\n\n' +
+                'This will:\n' +
+                '- Reset highlight and block lists to original limited sets\n' +
+                '- Clear all blacklists\n' +
+                '- Turn off fansubbers and minis auto-import toggles\n' +
+                '- Reset highlight colors to defaults\n' +
+                '- Clear blocked categories\n' +
+                '- Enable the script if it was disabled\n\n' +
+                'This action cannot be undone. Do you want to continue?',
+            showCancel: true
+        });
 
         if (confirmed) {
             // Reset to original defaults
@@ -1475,14 +1776,11 @@
             AppState.saveBlockedCategories();
             AppState.saveColors();
 
-            // Exit edit mode if active
             exitEditMode();
 
-            // Update UI elements
             updateRuleLists();
             updateDisplay();
 
-            // Update toggle switches
             const toggleSwitch = document.getElementById('toggle-highlight-block-switch');
             const fansubbersToggle = document.getElementById('fansubbers-toggle');
             const minisToggle = document.getElementById('minis-toggle');
@@ -1491,13 +1789,11 @@
             if (fansubbersToggle) fansubbersToggle.checked = false;
             if (minisToggle) minisToggle.checked = false;
 
-            // Update color pickers
             const lightPicker = document.getElementById('light-color-picker');
             const darkPicker = document.getElementById('dark-color-picker');
             if (lightPicker) lightPicker.value = AppState.colors.light;
             if (darkPicker) darkPicker.value = AppState.colors.dark;
 
-            // Update category checkboxes
             const categoryCheckboxes = document.querySelectorAll('.category-checkbox');
             categoryCheckboxes.forEach(checkbox => {
                 checkbox.checked = false;
@@ -1509,13 +1805,13 @@
     // COLOR PICKER HANDLERS
     // ============================================================================
 
-        /**
-     * Handle light mode color change
-     */
+    /**
+    * Handle light mode color change
+    */
     const handleLightColorChange = (event) => {
         AppState.colors.light = event.target.value;
         AppState.saveColors();
-        updateDisplay(); // Refresh highlights with new color
+        updateDisplay();
     };
 
     /**
@@ -1524,7 +1820,7 @@
     const handleDarkColorChange = (event) => {
         AppState.colors.dark = event.target.value;
         AppState.saveColors();
-        updateDisplay(); // Refresh highlights with new color
+        updateDisplay();
     };
 
     /**
@@ -1699,7 +1995,7 @@
                     font-size: 14px;
                 }
 
-                #keywords-highlight-list, #keywords-block-list {
+                .rule-list {
                     overflow-y: auto;
                     padding: 5px;
                     border: 1px solid #ccc;
@@ -1730,10 +2026,10 @@
                 .action-button {
                     border: 1px solid #333;
                     border-radius: 5px;
-                    cursor: pointer;
                     background-color: #555;
-                    color: white;
                     padding: 8px 12px;
+                    color: white;
+                    cursor: pointer;
                     transition: background-color 0.2s;
                 }
 
@@ -1745,6 +2041,15 @@
                     background-color: #888;
                     cursor: not-allowed;
                     opacity: 0.6;
+                }
+
+                .action-button.danger {
+                    background-color: #dc3545;
+                    border-color: #c82333;
+                }
+
+                .action-button.danger:hover:not(:disabled) {
+                    background-color: #c82333;
                 }
 
                 .switch {
@@ -1812,6 +2117,36 @@
                     background-color: #3a3a2a;
                 }
 
+                .filter-row {
+                    justify-content: space-between;
+                    align-items: center;
+                }
+
+                .filter-inline {
+                    display: flex;
+                    gap: 6px;
+                    margin-left: auto;
+                    flex-wrap: wrap;
+                }
+
+                .filter-chip {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    font-size: 11px;
+                    color: #ccc;
+                    cursor: pointer;
+                    border: 1px solid #555;
+                    border-radius: 12px;
+                    padding: 2px 8px;
+                    background-color: #2a2a2a;
+                }
+
+                .filter-chip input {
+                    margin: 0;
+                    cursor: pointer;
+                }
+
                 .rule-buttons {
                     flex-shrink: 0;
                     margin-right: 8px;
@@ -1841,6 +2176,18 @@
 
                 .red-chip {
                     background-color: #dc3545;
+                }
+
+                .auto-badge {
+                    background-color: #6c757d;
+                    color: white;
+                    padding: 2px 6px;
+                    border-radius: 12px;
+                    margin: 2px;
+                    display: inline-block;
+                    font-size: 11px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.3px;
                 }
 
                 .button-group {
@@ -1878,12 +2225,6 @@
                     align-items: center;
                     gap: 8px;
                     margin: 0;
-                }
-
-                .top-right-controls {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
                 }
 
                 .help-icon {
@@ -1926,26 +2267,53 @@
                     bottom: 5vh;
                     left: 50%;
                     transform: translateX(-50%);
-                    background-color: #333;
+                    background-color: #2a2a2a;
                     color: white;
                     padding: 20px;
                     z-index: 10002;
-                    border: 2px solid #ccc;
+                    border: 1px solid #555;
                     border-radius: 10px;
                     display: none;
-                    min-width: 60%;
+                    min-width: 55%;
+                    max-width: 900px;
                     overflow-y: auto;
                     box-shadow: 0 4px 20px rgba(0,0,0,0.5);
                 }
 
+                .help-popup h3 {
+                    margin: 0 0 12px 0;
+                    font-size: 18px;
+                    border-bottom: 1px solid #444;
+                    padding-bottom: 8px;
+                }
+
+                .help-popup p {
+                    margin: 16px 0 6px 0;
+                    font-size: 12px;
+                    color: #ddd;
+                    text-transform: uppercase;
+                    letter-spacing: 0.6px;
+                }
+
                 .help-popup ul {
-                    margin: 10px 0;
-                    padding-left: 20px;
+                    margin: 0 0 12px 0;
+                    padding-left: 18px;
                 }
 
                 .help-popup li {
-                    margin-bottom: 8px;
-                    line-height: 1.4;
+                    margin: 6px 0;
+                    line-height: 1.5;
+                    color: #ccc;
+                }
+
+                .help-list-item {
+                    margin-left: 20px;
+                    padding-left: 6px;
+                    display: block;
+                }
+
+                .help-list-item.spaced {
+                    margin-top: 8px;
                 }
 
                 .help-close {
@@ -1972,26 +2340,13 @@
                     font-size: 12px;
                     color: #ccc;
                     white-space: nowrap;
+                    font-weight: normal;
                 }
 
-                .import-export-buttons {
-                    display: flex;
-                    gap: 8px;
-                }
-
-                .import-export-btn {
-                    padding: 4px 8px;
-                    font-size: 11px;
-                    background-color: #6c757d;
-                    border: 1px solid #5a6268;
-                    color: white;
-                    border-radius: 4px;
+                .link-inline {
+                    color: #007bff;
+                    text-decoration: underline;
                     cursor: pointer;
-                    transition: background-color 0.2s;
-                }
-
-                .import-export-btn:hover {
-                    background-color: #5a6268;
                 }
 
                 .preset-btn {
@@ -1999,8 +2354,8 @@
                     font-size: 12px;
                     background-color: #28a745;
                     border: 1px solid #1e7e34;
-                    color: white;
                     border-radius: 4px;
+                    color: white;
                     cursor: pointer;
                     transition: background-color 0.2s;
                 }
@@ -2036,16 +2391,9 @@
                     margin-bottom: 0;
                 }
 
-                .color-label {
-                    font-size: 12px;
-                    color: #ccc;
-                    min-width: 100px;
-                    flex-shrink: 0;
-                }
-
                 .color-picker {
-                    width: 40px;
-                    height: 25px;
+                    width: 50px;
+                    height: 30px;
                     border: 1px solid #666;
                     border-radius: 4px;
                     cursor: pointer;
@@ -2064,15 +2412,23 @@
                     border-radius: 4px;
                 }
 
+                .color-picker-active #guiContainer {
+                    display: none !important;
+                }
+
+                .color-picker-active .settings-overlay {
+                    display: block !important;
+                }
+
                 .reset-color-btn {
-                    width: 25px;
-                    height: 25px;
+                    width: 30px;
+                    height: 30px;
                     border: 1px solid #666;
                     border-radius: 4px;
                     background-color: #555;
                     color: #ccc;
                     cursor: pointer;
-                    font-size: 14px;
+                    font-size: 16px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -2146,109 +2502,107 @@
                     gap: 10px;
                 }
 
-                .settings-button {
-                    padding: 8px 16px;
+                .settings-buttons.column-left {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+
+                .blacklist-description {
                     font-size: 12px;
-                    background-color: #6c757d;
-                    border: 1px solid #5a6268;
-                    color: white;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    transition: background-color 0.2s;
+                    color: #ccc;
+                    margin-top: 10px;
+                    margin-bottom: 10px;
+                    line-height: 1.4;
                 }
 
-                .settings-button:hover {
-                    background-color: #5a6268;
+                .blacklist-section {
+                    display: flex;
+                    gap: 20px;
+                    flex-wrap: wrap;
                 }
 
-                .color-picker-section {
+                .blacklist-group {
+                    width: 49%;
                     display: flex;
                     flex-direction: column;
-                    gap: 10px;
+                    gap: 8px;
                 }
 
-                .color-picker-row {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                }
-
-                .color-label {
+                .blacklist-label {
                     font-size: 12px;
                     color: #ccc;
-                    min-width: 120px;
-                    flex-shrink: 0;
                 }
 
-                .color-picker {
-                    width: 50px;
-                    height: 30px;
-                    border: 1px solid #666;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    background: none;
-                    padding: 0;
-                }
-
-                .color-picker::-webkit-color-swatch-wrapper {
-                    padding: 0;
-                    border: none;
-                    border-radius: 4px;
-                }
-
-                .color-picker::-webkit-color-swatch {
-                    border: none;
-                    border-radius: 4px;
-                }
-
-                .reset-color-btn {
-                    width: 30px;
-                    height: 30px;
-                    border: 1px solid #666;
-                    border-radius: 4px;
-                    background-color: #555;
-                    color: #ccc;
-                    cursor: pointer;
-                    font-size: 16px;
-                    display: flex;
+                .hb-modal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.6);
+                    display: none;
                     align-items: center;
                     justify-content: center;
-                    transition: background-color 0.2s;
+                    z-index: 10003;
                 }
 
-                .reset-color-btn:hover {
-                    background-color: #666;
+                .hb-modal {
+                    background-color: #2a2a2a;
                     color: white;
+                    border: 2px solid #555;
+                    border-radius: 10px;
+                    width: 90%;
+                    max-width: 520px;
+                    padding: 16px;
+                    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
                 }
 
-                /* Hide main overlay when color picker is active */
-                .color-picker-active #guiContainer {
-                    display: none !important;
+                .hb-modal-header {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    margin-bottom: 12px;
                 }
 
-                .color-picker-active .settings-overlay {
-                    display: block !important;
+                .hb-modal-header h4 {
+                    margin: 0;
+                }
+
+                .hb-modal-body {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                    font-size: 12px;
+                    color: #ccc;
+                }
+
+                #notice-message {
+                    white-space: pre-line;
+                }
+
+                .hb-modal-warning {
+                    color: #ccc;
+                }
+
+                .hb-modal-actions {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                    margin-top: 14px;
+                }
+
+                .hb-modal-actions.right {
+                    justify-content: flex-end;
+                }
+
+                .hb-hidden {
+                    display: none;
                 }
 
                 .category-controls {
                     display: flex;
                     gap: 10px;
                     margin-bottom: 15px;
-                }
-
-                .category-control-btn {
-                    padding: 6px 12px;
-                    font-size: 11px;
-                    background-color: #6c757d;
-                    border: 1px solid #5a6268;
-                    color: white;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    transition: background-color 0.2s;
-                }
-
-                .category-control-btn:hover {
-                    background-color: #5a6268;
                 }
 
                 .category-checkboxes {
@@ -2272,6 +2626,7 @@
                     color: #ccc;
                     cursor: pointer;
                     width: 100%;
+                    font-weight: normal;
                 }
 
                 .category-checkbox {
@@ -2281,6 +2636,7 @@
 
                 .category-name {
                     flex-grow: 1;
+                    font-weight: normal;
                 }
 
                 .category-checkbox-label:hover .category-name {
@@ -2351,8 +2707,6 @@
             }
         },
 
-
-
         /**
          * Get HTML content for GUI
          * @returns {string} HTML content
@@ -2372,12 +2726,22 @@
                             <div id="highlight-keyword-container"></div>
                             <p>But not if it contains:</p>
                             <div id="highlight-exception-container"></div>
-                            <div class="button-group">
+                            <div class="button-group filter-row">
                                 <button id="add-keyword-highlight-btn" class="action-button">Add Highlight Rule</button>
+                                <div class="filter-inline">
+                                    <label class="filter-chip">
+                                        <input type="checkbox" id="show-auto-rules" ${AppState.showAutoRules ? 'checked' : ''}>
+                                        <span>Auto</span>
+                                    </label>
+                                    <label class="filter-chip">
+                                        <input type="checkbox" id="show-manual-rules" ${AppState.showManualRules ? 'checked' : ''}>
+                                        <span>Manual</span>
+                                    </label>
+                                </div>
                             </div>
                             <div id="highlight-validation-error" class="validation-error"></div>
                         </div>
-                        <ul id="keywords-highlight-list"></ul>
+                        <ul id="keywords-highlight-list" class="rule-list"></ul>
                     </div>
                     <div>
                         <div class="section-header">
@@ -2406,11 +2770,10 @@
                             </div>
                             <div id="block-validation-error" class="validation-error"></div>
                         </div>
-                        <ul id="keywords-block-list"></ul>
+                        <ul id="keywords-block-list" class="rule-list"></ul>
                     </div>
                 </div>
 
-                <!-- Settings Overlay -->
                 <div class="settings-overlay" id="settings-overlay">
                     <div class="settings-header">
                         <h3>Settings</h3>
@@ -2418,15 +2781,15 @@
                     </div>
 
                     <div class="settings-content">
-                         <div class="settings-section">
+                            <div class="settings-section">
                             <h4>Highlight Colors</h4>
                             <div class="color-picker-row">
-                                <label class="color-label">Light mode color:</label>
+                                <label class="toggle-label">Light mode color:</label>
                                 <input type="color" id="light-color-picker" value="${AppState.colors.light}" class="color-picker">
                                 <button id="reset-light-color" class="reset-color-btn" title="Reset to default">↺</button>
                             </div>
                             <div class="color-picker-row">
-                                <label class="color-label">Dark mode color:</label>
+                                <label class="toggle-label">Dark mode color:</label>
                                 <input type="color" id="dark-color-picker" value="${AppState.colors.dark}" class="color-picker">
                                 <button id="reset-dark-color" class="reset-color-btn" title="Reset to default">↺</button>
                             </div>
@@ -2434,8 +2797,8 @@
 
                         ${!isSukebei ? `
                         <div class="settings-section">
-                            <h4>Auto-Import Lists</h4>
-                            <div class="settings-buttons" style="flex-direction: column; align-items: flex-start;">
+                            <h4>Auto-Import Rules</h4>
+                            <div class="settings-buttons column-left">
                                 <div class="toggle-container">
                                     <span class="toggle-label">Auto-highlight fansubbers:</span>
                                     <label class="switch">
@@ -2451,14 +2814,32 @@
                                     </label>
                                 </div>
                             </div>
+                            <div class="blacklist-description">
+                                If you remove rules from the auto-highlight list or the auto-block list,
+                                the below blacklists will populate so the rules are not re-added in the future.
+                                If you change your mind, removing a rule from the blacklist will add it back to your highlight/block rules.
+                            </div>
+                            <div class="button-group">
+                                <button id="toggle-blacklists-btn" class="action-button">Show Blacklists</button>
+                            </div>
+                            <div class="blacklist-section" id="blacklist-section" style="display: none;">
+                                <div class="blacklist-group">
+                                    <div class="blacklist-label">Fansubbers blacklist</div>
+                                    <ul id="fansubbers-blacklist-list" class="rule-list"></ul>
+                                </div>
+                                <div class="blacklist-group">
+                                    <div class="blacklist-label">Minis blacklist</div>
+                                    <ul id="minis-blacklist-list" class="rule-list"></ul>
+                                </div>
+                            </div>
                         </div>
                         ` : ''}
 
                         <div class="settings-section">
                             <h4>Block Categories</h4>
                             <div class="category-controls">
-                                <button id="select-all-categories" class="category-control-btn">Select All</button>
-                                <button id="select-none-categories" class="category-control-btn">Select None</button>
+                                <button id="select-all-categories" class="action-button">Select All</button>
+                                <button id="select-none-categories" class="action-button">Select None</button>
                             </div>
                             <div class="category-checkboxes">
                                 ${Object.entries(CATEGORIES).map(([key, label]) => `
@@ -2475,16 +2856,69 @@
                         <div class="settings-section">
                             <h4>Custom Import/Export</h4>
                             <div class="settings-buttons">
-                                <button id="import-btn" class="settings-button" title="Import configuration from file">Import Configuration</button>
-                                <button id="export-btn" class="settings-button" title="Export configuration to file">Export Configuration</button>
+                                <button id="import-btn" class="action-button" title="Import configuration from file">Import Configuration</button>
+                                <button id="export-btn" class="action-button" title="Export configuration to file">Export Configuration</button>
                             </div>
                         </div>
 
                         <div class="settings-section">
                             <h4>Reset Settings</h4>
                             <div class="settings-buttons">
-                                <button id="reset-to-defaults-btn" class="settings-button" style="background-color: #dc3545; border-color: #c82333;" title="Reset all settings to their original defaults">Reset to Default Settings</button>
+                                <button id="reset-to-defaults-btn" class="action-button danger" title="Reset all settings to their original defaults">Reset to Default Settings</button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hb-modal-overlay" id="import-mode-modal">
+                    <div class="hb-modal">
+                        <div class="hb-modal-header">
+                            <h4>Import Configuration</h4>
+                            <button class="close-x" id="import-mode-close" title="Close">&times;</button>
+                        </div>
+                        <div class="hb-modal-body">
+                            <div>Choose how you want to import your settings:</div>
+                            <div><strong>Merge:</strong> Import only the Highlight and Block rules. These will be ADDED to your rules, rather than replacing.</div>
+                            <div class="hb-modal-warning"><strong>Override:</strong> Replace EVERYTHING. This will delete and replace all of your Highlight and Block rules, as well as your settings.</div>
+                        </div>
+                        <div class="hb-modal-actions">
+                            <button id="import-mode-merge" class="action-button">Merge</button>
+                            <button id="import-mode-override" class="action-button danger">Override</button>
+                            <button id="import-mode-cancel" class="action-button">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hb-modal-overlay" id="import-confirm-modal">
+                    <div class="hb-modal">
+                        <div class="hb-modal-header">
+                            <h4>Confirm Import</h4>
+                            <button class="close-x" id="import-confirm-close" title="Close">&times;</button>
+                        </div>
+                        <div class="hb-modal-body">
+                            <div id="import-confirm-summary"></div>
+                            <div id="import-confirm-warning" class="hb-modal-warning"></div>
+                            <div>This action cannot be undone.</div>
+                        </div>
+                        <div class="hb-modal-actions">
+                            <button id="import-confirm-yes" class="action-button danger">Confirm</button>
+                            <button id="import-confirm-no" class="action-button">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hb-modal-overlay" id="notice-modal">
+                    <div class="hb-modal">
+                        <div class="hb-modal-header">
+                            <h4 id="notice-title">Notice</h4>
+                            <button class="close-x" id="notice-close" title="Close">&times;</button>
+                        </div>
+                        <div class="hb-modal-body">
+                            <div id="notice-message"></div>
+                        </div>
+                        <div class="hb-modal-actions right">
+                            <button id="notice-ok" class="action-button">OK</button>
+                            <button id="notice-cancel" class="action-button hb-hidden">Cancel</button>
                         </div>
                     </div>
                 </div>
@@ -2510,28 +2944,28 @@
                     <ul>
                         <li>Must contain: ALL words/phrases must be found in a title (uses AND logic)</li>
                         <li>But not if it contains: If ANY of these words/phrases are found, the rule won't apply (uses OR logic)</li>
-                        <li>Note: Non-latin characters are (hopefully) fully supported. This includes spaces, meaning you could things like block "CR WEB-DL AVC" if so desired</li>
+                        <li>Note: Non-latin characters are (hopefully) fully supported. This includes spaces, meaning you could do things like blocking "CR WEB-DL AVC" if so desired</li>
                         <li>Note: Matching is case-insensitive ("SubsPlease" is the same as "subsplease")</li>
                     </ul>
 
                     <p>Example:</p>
                     <ul>
-                        <li>If you wanted to highlight all 1080p SubsPlease releases except for unofficial batches, you could configure it as:</li>
-                        <li style="margin-left: 20px; margin-top: 8px;">
+                        <li>If you wanted to highlight all 1080p SubsPlease releases except for unofficial batches, you could configure it under the Highlight section as:</li>
+                        <li class="help-list-item spaced">
                             Must contain:
                             <span class="colored-chip green-chip">SubsPlease</span>
                             <span class="colored-chip green-chip">1080p</span>
                         </li>
-                        <li style="margin-left: 20px;">
+                        <li class="help-list-item">
                             But not if it contains:
                             <span class="colored-chip red-chip">Unofficial Batch</span>
                         </li>
-                        <li>If you wanted to block all VARYG releases except for Netflix, Amazon, or Disney+ (i.e. block all of VARYG's Crunchyroll and Hidive releases):</li>
-                        <li style="margin-left: 20px; margin-top: 8px;">
+                        <li>If you wanted to block all VARYG releases except for Netflix, Amazon, or Disney+ (i.e. block all of VARYG's Crunchyroll and Hidive releases), you could configure it under the Block section as:</li>
+                        <li class="help-list-item spaced">
                             Must contain:
                             <span class="colored-chip green-chip">VARYG</span>
                         </li>
-                        <li style="margin-left: 20px;">
+                        <li class="help-list-item">
                             But not if it contains:
                             <span class="colored-chip red-chip">NF</span>
                             <span class="colored-chip red-chip">AMZN</span>
@@ -2541,12 +2975,13 @@
 
                     <p>Further settings:</p>
                     <ul>
-                        <li>The "Enable" toggle in the top right turns the entire script on or off until turned back on</li>
-                        <li>Click the "⚙" (gear icon) next to the close button to access the following additional settings:</li>
-                        <li>Highlight Colors: Customize the highlight colors for both light and dark themes</li>
-                        <li>Auto-Import Lists: Instantly highlight common fansubber groups or block mini release groups, and receive automatic updates. Undesired groups can be removed with the "Remove" button</li>
-                        <li>Block Categories: Block undesired categories (e.g. "Anime - Anime Music Video") when browsing the homepage or a category group</li>
-                        <li>Custom Import/Export: Save your rules to a file or load previously saved configurations</li>
+                        <li>The "Enable" toggle in the top right turns the entire script on or off</li>
+                        <li>Click the "⚙" (gear icon) in the top right, next to the close button, to access the following additional settings:</li>
+                        <li class="help-list-item spaced">Highlight Colors: Customize the highlight colors for both light and dark themes</li>
+                        <li class="help-list-item spaced">Auto-Import Rules: Instantly highlight common fansubber groups or block mini release groups, and receive automatic updates. Undesired groups can be removed</li>
+                        <li class="help-list-item spaced">Block Categories: Block undesired categories (e.g. "Anime - Anime Music Video") when browsing the homepage or a category group. If you navigate directly to a category (e.g. filter specifically to show only "Anime - Anime Music Video"), it will not be hidden</li>
+                        <li class="help-list-item spaced">Custom Import/Export: Save your rules to a file for sharing or backup, or load previously saved configurations. On import you can choose to override all settings or only merge rules</li>
+                        <li class="help-list-item spaced">Reset Settings: Restart from scratch. Will reset all configured highlights, blocks, and other settings. Consider exporting your configuration before performing a reset</li>
                     </ul>
                 </div>
 
@@ -2721,7 +3156,26 @@
                         autoImportFansubbers();
                         updateRuleLists();
                         updateDisplay();
+                        return;
                     }
+
+                    openNoticeModal({
+                        title: 'Auto-Highlight Disabled',
+                        message:
+                            'Do you want to remove all auto-imported fansubber rules from Highlights?\n' +
+                            'This will only remove rules that match the preset list.',
+                        showCancel: true,
+                        okText: 'Yes',
+                        cancelText: 'No'
+                    }).then((confirmed) => {
+                        if (!confirmed) return;
+                        AppState.keywordsHighlight = AppState.keywordsHighlight.filter(([k, e]) =>
+                            !isPresetRuleForType('highlight', k, e)
+                        );
+                        AppState.saveHighlightKeywords();
+                        updateRuleLists();
+                        updateDisplay();
+                    });
                 });
             }
 
@@ -2733,7 +3187,26 @@
                         autoImportMinis();
                         updateRuleLists();
                         updateDisplay();
+                        return;
                     }
+
+                    openNoticeModal({
+                        title: 'Auto-Block Disabled',
+                        message:
+                            'Do you want to remove all auto-imported mini rules from Blocks?\n' +
+                            'This will only remove rules that match the preset list.',
+                        showCancel: true,
+                        okText: 'Yes',
+                        cancelText: 'No'
+                    }).then((confirmed) => {
+                        if (!confirmed) return;
+                        AppState.keywordsBlock = AppState.keywordsBlock.filter(([k, e]) =>
+                            !isPresetRuleForType('block', k, e)
+                        );
+                        AppState.saveBlockKeywords();
+                        updateRuleLists();
+                        updateDisplay();
+                    });
                 });
             }
 
@@ -2864,6 +3337,34 @@
                 resetBtn.addEventListener('click', resetToDefaultSettings);
             }
 
+            const toggleBlacklistsBtn = document.getElementById('toggle-blacklists-btn');
+            const blacklistSection = document.getElementById('blacklist-section');
+            if (toggleBlacklistsBtn && blacklistSection) {
+                toggleBlacklistsBtn.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    const isHidden = blacklistSection.style.display === 'none';
+                    blacklistSection.style.display = isHidden ? 'flex' : 'none';
+                    toggleBlacklistsBtn.textContent = isHidden ? 'Hide Blacklists' : 'Show Blacklists';
+                });
+            }
+
+            const showAutoCheckbox = document.getElementById('show-auto-rules');
+            const showManualCheckbox = document.getElementById('show-manual-rules');
+            if (showAutoCheckbox) {
+                showAutoCheckbox.addEventListener('change', (event) => {
+                    AppState.showAutoRules = event.target.checked;
+                    AppState.saveRuleFilters();
+                    updateRuleLists();
+                });
+            }
+            if (showManualCheckbox) {
+                showManualCheckbox.addEventListener('change', (event) => {
+                    AppState.showManualRules = event.target.checked;
+                    AppState.saveRuleFilters();
+                    updateRuleLists();
+                });
+            }
+
             updateRuleLists();
             updateDisplay();
         },
@@ -2873,10 +3374,10 @@
          */
         initializeChipInputs() {
             this.chipInputs = {
-                highlightKeyword: new ChipInput('highlight-keyword-container', 'Add required word or phrase'),
-                highlightException: new ChipInput('highlight-exception-container', 'Add word or phrase to exclude'),
-                blockKeyword: new ChipInput('block-keyword-container', 'Add required word or phrase'),
-                blockException: new ChipInput('block-exception-container', 'Add word or phrase to exclude')
+                highlightKeyword: new ChipInput('highlight-keyword-container', 'Add word or phrase to highlight'),
+                highlightException: new ChipInput('highlight-exception-container', 'Add word or phrase to exclude from highlight'),
+                blockKeyword: new ChipInput('block-keyword-container', 'Add word or phrase to block'),
+                blockException: new ChipInput('block-exception-container', 'Add word or phrase to exclude from block')
             };
         },
 
@@ -2914,6 +3415,7 @@
     const updateRuleLists = () => {
         updateHighlightRuleList();
         updateBlockRuleList();
+        updateBlacklistLists();
         UI.syncListHeights();
     };
 
@@ -2927,6 +3429,10 @@
         list.innerHTML = '';
 
         AppState.keywordsHighlight.forEach(([keywordParts, exceptionParts], index) => {
+            const isAuto = isPresetRuleForType('highlight', keywordParts, exceptionParts);
+            if ((!AppState.showAutoRules && isAuto) || (!AppState.showManualRules && !isAuto)) {
+                return;
+            }
             const listItem = createRuleListItem('highlight', index, keywordParts, exceptionParts);
             list.appendChild(listItem);
         });
@@ -2942,9 +3448,93 @@
         list.innerHTML = '';
 
         AppState.keywordsBlock.forEach(([keywordParts, exceptionParts], index) => {
+            const isAuto = isPresetRuleForType('block', keywordParts, exceptionParts);
+            if ((!AppState.showAutoRules && isAuto) || (!AppState.showManualRules && !isAuto)) {
+                return;
+            }
             const listItem = createRuleListItem('block', index, keywordParts, exceptionParts);
             list.appendChild(listItem);
         });
+    };
+
+    /**
+     * Update both blacklist lists
+     */
+    const updateBlacklistLists = () => {
+        updateBlacklistList('fansubbers');
+        updateBlacklistList('minis');
+    };
+
+    /**
+     * Update a blacklist list display
+     * @param {string} type - 'fansubbers' or 'minis'
+     */
+    const updateBlacklistList = (type) => {
+        const list = document.getElementById(`${type}-blacklist-list`);
+        if (!list) return;
+
+        list.innerHTML = '';
+
+        const rules = type === 'fansubbers' ? AppState.fansubbersBlacklist : AppState.minisBlacklist;
+        if (rules.length > 1) {
+            sortRules(rules);
+            AppState.saveBlacklists();
+        }
+        rules.forEach(([keywordParts, exceptionParts], index) => {
+            const listItem = createBlacklistListItem(type, index, keywordParts, exceptionParts);
+            list.appendChild(listItem);
+        });
+    };
+
+    /**
+     * Create a blacklist list item element
+     * @param {string} type - 'fansubbers' or 'minis'
+     * @param {number} index - Rule index
+     * @param {Array} keywordParts - Keyword parts array
+     * @param {Array} exceptionParts - Exception parts array
+     * @returns {Element} List item element
+     */
+    const createBlacklistListItem = (type, index, keywordParts, exceptionParts) => {
+        const keywordChips = keywordParts
+            .filter(k => k && k.trim())
+            .map(k => `<span class="colored-chip green-chip">${sanitizeInput(k)}</span>`)
+            .join('');
+
+        const exceptionChips = exceptionParts
+            .filter(e => e && e.trim())
+            .map(e => `<span class="colored-chip red-chip">${sanitizeInput(e)}</span>`)
+            .join('');
+
+        const li = document.createElement('li');
+        li.className = 'rule-item';
+
+        li.innerHTML = `
+            <div class="rule-buttons">
+                <div class="button-group">
+                    <button class="action-button rule-button blacklist-remove-btn"
+                            data-type="${type}"
+                            data-index="${index}">
+                        Remove
+                    </button>
+                </div>
+            </div>
+            <div class="rule-content">
+                ${keywordChips}
+                ${exceptionChips}
+            </div>
+        `;
+
+        const removeBtn = li.querySelector('.blacklist-remove-btn');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const idx = parseInt(removeBtn.dataset.index);
+                const ruleType = removeBtn.dataset.type;
+                removeBlacklistRule(ruleType, idx);
+            });
+        }
+
+        return li;
     };
 
     /**
@@ -2957,8 +3547,8 @@
      */
     const createRuleListItem = (type, index, keywordParts, exceptionParts) => {
         const isEditing = AppState.editMode.isEditing &&
-                         AppState.editMode.type === type &&
-                         AppState.editMode.index === index;
+            AppState.editMode.type === type &&
+            AppState.editMode.index === index;
 
         const keywordChips = keywordParts
             .filter(k => k && k.trim())
@@ -2969,6 +3559,10 @@
             .filter(e => e && e.trim())
             .map(e => `<span class="colored-chip red-chip">${sanitizeInput(e)}</span>`)
             .join('');
+
+        const presetBadge = isPresetRuleForType(type, keywordParts, exceptionParts)
+            ? `<span class="auto-badge">Auto</span>`
+            : '';
 
         const li = document.createElement('li');
         li.className = `rule-item ${isEditing ? 'editing' : ''}`;
@@ -2991,6 +3585,7 @@
             <div class="rule-content">
                 ${keywordChips}
                 ${exceptionChips}
+                ${presetBadge}
             </div>
         `;
 
@@ -3047,8 +3642,6 @@
 
             updateDisplay();
             initThemeAndNyaaBlueMonitoring();
-
-            console.log('Nyaa Highlight & Block script initialized successfully');
         } catch (error) {
             console.error('Failed to initialize Nyaa Highlight & Block script:', error);
         }
@@ -3061,8 +3654,4 @@
     } else {
         init();
     }
-
 })();
-
-
-
