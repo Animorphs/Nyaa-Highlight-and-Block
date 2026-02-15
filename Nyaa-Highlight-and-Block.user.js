@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Nyaa - Highlight & Block
-// @version      1.10
+// @version      1.11
 // @description  Highlight and block releases on nyaa.si
 // @author       Animorphs
 // @namespace    https://github.com/Animorphs/Nyaa-Highlight-and-Block
@@ -2519,18 +2519,24 @@
                     display: flex;
                     gap: 20px;
                     flex-wrap: wrap;
+                    margin-top: 8px;
                 }
 
                 .blacklist-group {
-                    width: 49%;
+                    width: 100%;
                     display: flex;
                     flex-direction: column;
                     gap: 8px;
                 }
 
                 .blacklist-label {
-                    font-size: 12px;
-                    color: #ccc;
+                    font-size: 13px;
+                    font-weight: 400;
+                    letter-spacing: 0.02em;
+                    text-transform: uppercase;
+                    color: #f0f0f0;
+                    padding-bottom: 4px;
+                    border-bottom: 1px solid #555;
                 }
 
                 .hb-modal-overlay {
@@ -3655,3 +3661,4 @@
         init();
     }
 })();
+
