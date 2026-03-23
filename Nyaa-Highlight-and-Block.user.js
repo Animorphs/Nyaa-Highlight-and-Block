@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Nyaa - Highlight & Block
-// @version      1.13
+// @version      1.14
 // @description  Highlight and block releases on nyaa.si
 // @author       Animorphs
 // @namespace    https://github.com/Animorphs/Nyaa-Highlight-and-Block
@@ -88,6 +88,7 @@
             [["[Kaleido-subs]"], []],
             [["[Kaizoku]"], []],
             [["[KawaSubs]"], []],
+            [["[Kawatare]"], []],
             [["[Lazyleido]"], []],
             [["[LonelyChaser]"], []],
             [["[MaruChanSubs]"], []],
@@ -114,7 +115,7 @@
             [["[sgt]"], []],
             [["[Starbez]"], []],
             [["[Stardust]"], []],
-            [["[tracen]"], []],
+            [["[SubsWhen]"], []],
             [["[Vodes]"], []],
             [["[WakuTomete]"], []],
             [["[WastedChaser]"], []],
@@ -126,7 +127,7 @@
             [["[Anime Time]"], []],
             [["[ARR]"], []],
             [["[ASW]"], []],
-            [["AV1"], []],
+            [["AV1"], ["[WOR]"]],
             [["[Feibanyama]"], []],
             [["[GERmini]"], []],
             [["[Judas]"], []],
@@ -136,6 +137,7 @@
             [["[Erai-raws]", "WEBRip"], []],
             [["[JacobSwaggedUp]"], []],
             [["[MiniMTBB]"], []],
+            [["[Mo7tas]"], []],
             [["[neoDESU]"], []],
             [["[neoHEVC]"], []],
             [["Rapta"], []],
