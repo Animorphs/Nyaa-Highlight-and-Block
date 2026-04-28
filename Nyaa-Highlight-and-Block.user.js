@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Nyaa - Highlight & Block
-// @version      1.14
+// @version      1.15
 // @description  Highlight and block releases on nyaa.si
 // @author       Animorphs
 // @namespace    https://github.com/Animorphs/Nyaa-Highlight-and-Block
@@ -90,6 +90,7 @@
             [["[KawaSubs]"], []],
             [["[Kawatare]"], []],
             [["[Lazyleido]"], []],
+            [["[LG]"], []],
             [["[LonelyChaser]"], []],
             [["[MaruChanSubs]"], []],
             [["[McBalls]"], []],
