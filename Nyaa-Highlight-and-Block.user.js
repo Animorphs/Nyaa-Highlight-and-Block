@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Nyaa - Highlight & Block
-// @version      1.15
+// @version      1.16
 // @description  Highlight and block releases on nyaa.si
 // @author       Animorphs
 // @namespace    https://github.com/Animorphs/Nyaa-Highlight-and-Block
@@ -143,6 +143,7 @@
             [["[neoHEVC]"], []],
             [["Rapta"], []],
             [["[Tenrai-Sensei]"], []],
+            [["[torta]"], []],
             [["[TRC]"], []]
         ]
     };
