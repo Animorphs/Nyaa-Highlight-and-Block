@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Nyaa - Highlight & Block
-// @version      1.16
+// @version      1.17
 // @description  Highlight and block releases on nyaa.si
 // @author       Animorphs
 // @namespace    https://github.com/Animorphs/Nyaa-Highlight-and-Block
@@ -131,6 +131,9 @@
             [["AV1"], ["[WOR]"]],
             [["[Feibanyama]"], []],
             [["[GERmini]"], []],
+            [["[HGS]"], []],
+            [["[HGS-R]"], []],
+            [["[HGS-Renc]"], []],
             [["[Judas]"], []],
             [["[DB]"], []],
             [["[DKB]"], []],
