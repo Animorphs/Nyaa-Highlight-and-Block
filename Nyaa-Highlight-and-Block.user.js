@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Nyaa - Highlight & Block
-// @version      1.17
+// @version      1.18
 // @description  Highlight and block releases on nyaa.si
 // @author       Animorphs
 // @namespace    https://github.com/Animorphs/Nyaa-Highlight-and-Block
@@ -107,6 +107,7 @@
             [["[Piyoko]"], []],
             [["[Pizza]"], []],
             [["[poop]"], []],
+            [["[RedKite]"], []],
             [["[Reza]"], []],
             [["[Saizen]"], []],
             [["[sam]"], []],
