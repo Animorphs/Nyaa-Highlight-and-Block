@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Nyaa - Highlight & Block
-// @version      1.18
+// @version      1.19
 // @description  Highlight and block releases on nyaa.si
 // @author       Animorphs
 // @namespace    https://github.com/Animorphs/Nyaa-Highlight-and-Block
@@ -127,6 +127,7 @@
         ],
         MINIS: [
             [["[Anime Time]"], []],
+            [["[Animorphs-mini]"], []],
             [["[ARR]"], []],
             [["[ASW]"], []],
             [["AV1"], ["[WOR]"]],
