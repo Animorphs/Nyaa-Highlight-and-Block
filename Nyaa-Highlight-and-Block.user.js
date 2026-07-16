@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Nyaa - Highlight & Block
-// @version      1.19
+// @version      1.20
 // @description  Highlight and block releases on nyaa.si
 // @author       Animorphs
 // @namespace    https://github.com/Animorphs/Nyaa-Highlight-and-Block
@@ -131,17 +131,18 @@
             [["[ARR]"], []],
             [["[ASW]"], []],
             [["AV1"], ["[WOR]"]],
+            [["[DB]"], []],
+            [["[DKB]"], []],
+            [["[EMBER]"], []],
+            [["[Erai-raws]", "WEBRip"], []],
             [["[Feibanyama]"], []],
             [["[GERmini]"], []],
             [["[HGS]"], []],
             [["[HGS-R]"], []],
             [["[HGS-Renc]"], []],
-            [["[Judas]"], []],
-            [["[DB]"], []],
-            [["[DKB]"], []],
-            [["[EMBER]"], []],
-            [["[Erai-raws]", "WEBRip"], []],
             [["[JacobSwaggedUp]"], []],
+            [["[Judas]"], []],
+            [["[Kotobuki]"], []],
             [["[MiniMTBB]"], []],
             [["[Mo7tas]"], []],
             [["[neoDESU]"], []],
