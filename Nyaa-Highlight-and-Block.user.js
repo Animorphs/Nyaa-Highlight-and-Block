@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Nyaa - Highlight & Block
-// @version      1.20
+// @version      1.21
 // @description  Highlight and block releases on nyaa.si
 // @author       Animorphs
 // @namespace    https://github.com/Animorphs/Nyaa-Highlight-and-Block
@@ -63,6 +63,7 @@
             [["[Arid]"], []],
             [["[Asakura]"], []],
             [["[Baws]"], []],
+            [["[BlackRose]"], []],
             [["[Blasphemboys]"], []],
             [["[BlurayDesuYo]"], []],
             [["[Cait-Sidhe]"], []],
