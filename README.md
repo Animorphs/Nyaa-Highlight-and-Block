@@ -3,9 +3,10 @@ Highlight and block releases on Nyaa.si
 
 ## How to Install
 1. Download and install [Tampermonkey](https://www.tampermonkey.net/). Note: this script may not work properly with Greasemonkey or Violentmonkey.
-2. Open the script on [Greasy Fork](https://greasyfork.org/en/scripts/541344-nyaa-highlight-block).
-3. Click "Install this script".
-4. Click "Install".
+2. If you are using a Chromium-based browser (primarily Google Chrome, Microsoft Edge, Brave, or Opera) navigate to `Chrome://Extensions`, select "Details" in the Tampermonkey tile, and enable the "Allow user scripts" toggle.
+3. Open this script on [Greasy Fork](https://greasyfork.org/en/scripts/541344-nyaa-highlight-block).
+4. Click "Install this script".
+5. Click "Install".
  
 ## Usage
 1. Navigate to [Nyaa](https://nyaa.si/).
