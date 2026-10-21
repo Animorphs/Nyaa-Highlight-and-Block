@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Nyaa - Highlight & Block
-// @version      1.25
+// @version      1.26
 // @description  Highlight and block releases on nyaa.si
 // @author       Animorphs
 // @namespace    https://github.com/Animorphs/Nyaa-Highlight-and-Block
@@ -117,6 +117,7 @@
             [["[MTBB]"], []],
             [["[Noiy]"], []],
             [["[Ny]"], []],
+            [["[Okay-Raws]"], []],
             [["[Okay-Subs]"], []],
             [["[Orphan]"], []],
             [["[P9]"], []],
