@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Nyaa - Highlight & Block
-// @version      1.26
+// @version      1.27
 // @description  Highlight and block releases on nyaa.si
 // @author       Animorphs
 // @namespace    https://github.com/Animorphs/Nyaa-Highlight-and-Block
@@ -148,6 +148,7 @@
             [["[Anime Time]"], []],
             [["[AnimeAlpha]"], []],
             [["[Animorphs-mini]"], []],
+            [["[Ari-M]"], []],
             [["[ARR]"], []],
             [["[ASW]"], []],
             [["AV1"], ["[WOR]"]],
@@ -991,6 +992,13 @@
         return { count: Number.isFinite(count) ? count : 0, element };
     };
 
+    const isHiddenTorrentRow = (row) => {
+        if (row.classList.contains('warning')) return true;
+        return (row.getAttribute('data-old-class') || '')
+            .split(/\s+/)
+            .includes('warning');
+    };
+
     const getCategoryFromRow = (row) => {
         const categoryImg = row.querySelector('img[alt]');
         if (!categoryImg) return '';
@@ -1074,6 +1082,7 @@
             const title = getTitleFromElement(titleElement);
             const category = getCategoryFromRow(row);
             const commentInfo = getCommentInfoFromRow(row);
+            const isHiddenTorrent = isHiddenTorrentRow(row);
 
             // Always clear our badge first so changing or disabling the setting is immediate.
             commentInfo.element?.classList.remove('hb-comment-highlight');
@@ -1084,7 +1093,13 @@
                 return;
             }
 
-            const matchingHighlightRules = getMatchingRules(title, AppState.keywordsHighlight);
+            if (isHiddenTorrent) {
+                resetRowStyling(row);
+            }
+
+            const matchingHighlightRules = isHiddenTorrent
+                ? []
+                : getMatchingRules(title, AppState.keywordsHighlight);
             const shouldHighlight = matchingHighlightRules.length > 0;
             const meetsCommentThreshold = commentInfo.count >= AppState.commentRescueThreshold;
             const hasCommentRescue = AppState.commentRescueEnabled &&
@@ -1132,8 +1147,8 @@
     }, CONFIG.DEBOUNCE_DELAY);
 
     const applyHighlight = (row, titleElement, matchingRules) => {
-        // Don't override NyaaBlue's own highlighted rows.
-        if (getBestClass(row)) {
+        // Preserve NyaaBlue and Nyaa hidden styling.
+        if (isHiddenTorrentRow(row) || getBestClass(row)) {
             return;
         }
 
