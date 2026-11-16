@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Nyaa - Highlight & Block
-// @version      1.28
+// @version      1.29
 // @description  Highlight and block releases on nyaa.si
 // @author       Animorphs
 // @namespace    https://github.com/Animorphs/Nyaa-Highlight-and-Block
@@ -102,6 +102,7 @@
             [["[h-b]"], []],
             [["[Half-Baked]"], []],
             [["[Heartside]"], []],
+            [["[hydes]"], []],
             [["[Inka-Subs]"], []],
             [["[Kaleido-subs]"], []],
             [["[Kaizoku]"], []],
@@ -132,6 +133,7 @@
             [["[sam]"], []],
             [["[Seigyoku]"], []],
             [["(shiteater)"], []],
+            [["[SoM]"], []],
             [["[Some-Stuffs]"], ["Pocket Monsters", "Poké"]], // Exclude pokemon due to volume that probably isn't relevant to most
             [["[sgt]"], []],
             [["[Starbez]"], []],
